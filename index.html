@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Number Printing · 6x9 Banner Numbers</title>
+<style>
+  @font-face { font-family: "Poppins"; font-weight: 600; src: url("fonts/poppins-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Poppins"; font-weight: 700; src: url("fonts/poppins-latin-700-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Poppins"; font-weight: 800; src: url("fonts/poppins-latin-800-normal.woff2") format("woff2"); }
+
+  :root { --ink: #231f20; --bg: #f4f3f1; --card: #fff; --line: #e3e1dd; --muted: #6b6866; --accent: #1f5f4a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Poppins", system-ui, sans-serif; background: var(--bg); color: var(--ink); }
+  header { padding: 20px 24px 8px; }
+  header h1 { margin: 0; font-size: 22px; font-weight: 700; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  main { display: grid; grid-template-columns: 360px 1fr; gap: 20px; padding: 16px 24px 40px; align-items: start; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .card + .card { margin-top: 16px; }
+  .card h2 { margin: 0 0 12px; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+
+  .pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .pad button { position: relative; aspect-ratio: 2 / 3; border: 1px solid var(--line); border-radius: 8px; background: #fff;
+    font: 700 34px "Poppins", sans-serif; color: var(--ink); cursor: pointer; transition: background .1s, transform .05s; }
+  .pad button:hover { background: #f7f6f4; }
+  .pad button:active { transform: scale(.96); }
+  .pad .count { position: absolute; top: 4px; right: 5px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; line-height: 18px; display: none; }
+  .pad .count.on { display: block; }
+
+  .row { display: flex; gap: 8px; margin-top: 12px; }
+  .row input[type=text] { flex: 1; min-width: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; font: 500 15px "Poppins", sans-serif; }
+  .btn { padding: 9px 14px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: 600 14px "Poppins", sans-serif; cursor: pointer; color: var(--ink); }
+  .btn:hover { background: #f7f6f4; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; width: 100%; padding: 13px; font-size: 16px; }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.primary:disabled { opacity: .4; cursor: default; }
+  .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; line-height: 1.5; }
+
+  .queue { display: flex; flex-wrap: wrap; gap: 6px; min-height: 40px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px 4px 10px; border-radius: 6px; background: #f1efec; font-weight: 700; font-size: 18px; }
+  .chip button { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 2px 4px; }
+  .chip button:hover { color: #b3261e; }
+  .empty { color: var(--muted); font-size: 14px; }
+
+  .setting { display: grid; grid-template-columns: 110px 1fr auto; align-items: center; gap: 10px; margin: 10px 0; font-size: 14px; }
+  .setting select, .setting input[type=range] { width: 100%; }
+  .setting select { padding: 6px; border: 1px solid var(--line); border-radius: 6px; font: 500 14px "Poppins", sans-serif; }
+  .setting output { font-size: 13px; color: var(--muted); min-width: 52px; text-align: right; }
+
+  .preview-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .preview-head h2 { margin: 0; }
+  .preview-head span { font-size: 14px; color: var(--muted); }
+  #pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  #pages .page { width: 100%; aspect-ratio: 8.5 / 11; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.12); border-radius: 2px; }
+  #pages .page svg { width: 100%; height: 100%; display: block; }
+  .placeholder { color: var(--muted); font-size: 14px; padding: 40px 0; text-align: center; grid-column: 1 / -1; }
+
+  #print-root { display: none; }
+
+  @page { size: 8.5in 11in; margin: 0; }
+  @media print {
+    body { background: #fff; }
+    header, main { display: none !important; }
+    #print-root { display: block; }
+    #print-root .page { width: 8.5in; height: 11in; page-break-after: always; break-after: page; overflow: hidden; }
+    #print-root .page:last-child { page-break-after: auto; break-after: auto; }
+    #print-root svg { width: 8.5in; height: 11in; display: block; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Number Printing</h1>
+  <p>6x9 banner numbers, one per letter page, with crop marks and a faint trim line.</p>
+</header>
+
+<main>
+  <section>
+    <div class="card">
+      <h2>Pick numbers</h2>
+      <div class="pad" id="pad"></div>
+      <div class="row">
+        <input type="text" id="typed" placeholder="Or type a set, e.g. 1214 0800" inputmode="numeric" autocomplete="off">
+        <button class="btn" id="addTyped">Add</button>
+      </div>
+      <p class="hint">Each tap adds one page. Numbers print in the order you add them.</p>
+    </div>
+
+    <div class="card">
+      <h2>To print</h2>
+      <div class="queue" id="queue"></div>
+      <div class="row">
+        <button class="btn" id="undo">Undo last</button>
+        <button class="btn" id="clear">Clear all</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Settings</h2>
+      <div class="setting">
+        <label for="weight">Weight</label>
+        <select id="weight">
+          <option value="600">Poppins SemiBold</option>
+          <option value="700" selected>Poppins Bold</option>
+          <option value="800">Poppins ExtraBold</option>
+        </select>
+        <output></output>
+      </div>
+      <div class="setting">
+        <label for="height">Number height</label>
+        <input type="range" id="height" min="6" max="8.75" step="0.25" value="8.5">
+        <output id="heightOut">8.5 in</output>
+      </div>
+      <div class="setting">
+        <label for="width">Width</label>
+        <input type="range" id="width" min="70" max="110" step="1" value="90">
+        <output id="widthOut">90%</output>
+      </div>
+      <div class="setting">
+        <label for="trim">Trim line</label>
+        <input type="range" id="trim" min="0" max="100" step="5" value="20">
+        <output id="trimOut">20%</output>
+      </div>
+      <div class="setting">
+        <label for="crops">Crop marks</label>
+        <input type="checkbox" id="crops" checked style="justify-self:start">
+        <output></output>
+      </div>
+      <p class="hint">Defaults match the Tree Lighting banner file: 8.5 in tall, 90% width. Trim line 0% = off. 20% is a very faint gray that just guides the cut.</p>
+    </div>
+
+    <div class="card">
+      <button class="btn primary" id="print" disabled>Print</button>
+      <p class="hint">In the print dialog set <b>Scale: 100%</b> (or "Actual size") and <b>Margins: None</b>. Choose "Save as PDF" to send it to someone else.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="preview-head">
+      <h2>Preview</h2>
+      <span id="pageCount">0 pages</span>
+    </div>
+    <div id="pages"></div>
+  </section>
+</main>
+
+<div id="print-root"></div>
+
+<script>
+(() => {
+  // Page geometry, in inches. Letter page, 6x9 trim centered (matches the original file).
+  const PAGE_W = 8.5, PAGE_H = 11;
+  const TRIM_W = 6, TRIM_H = 9;
+  const TX = (PAGE_W - TRIM_W) / 2;   // 1.25
+  const TY = (PAGE_H - TRIM_H) / 2;   // 1.0
+  const MARK_LEN = 0.375, MARK_GAP = 0.0625, MARK_STROKE = 0.25 / 72; // 0.25pt
+  const TRIM_STROKE = 0.5 / 72;       // 0.5pt
+  const INK = "#231f20";
+  const SIDE_PAD = 0.04;              // keep wide digits just inside the trim
+
+  const STORE_KEY = "number-printing-v2";
+  const state = { queue: [], weight: "700", height: 8.5, width: 90, trim: 20, crops: true };
+  try { Object.assign(state, JSON.parse(localStorage.getItem(STORE_KEY) || "{}")); } catch (e) {}
+  const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} };
+
+  const $ = (id) => document.getElementById(id);
+  const pad = $("pad"), queueEl = $("queue"), pagesEl = $("pages"), printRoot = $("print-root");
+
+  // Keypad 1-9 then 0, like a phone row layout but in two rows of five.
+  const DIGITS = ["1","2","3","4","5","6","7","8","9","0"];
+  DIGITS.forEach((d) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = `${d}<span class="count" data-d="${d}"></span>`;
+    b.title = `Add a ${d}`;
+    b.addEventListener("click", () => { state.queue.push(d); update(); });
+    pad.appendChild(b);
+  });
+
+  // Glyph metrics, measured from the real font so sizing is exact.
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  let metrics = {}; // digit -> {left, right, ascent, descent} as fraction of font size
+
+  // Draw each digit big on a hidden canvas and scan the pixels for its true ink box.
+  function measureAll() {
+    const S = 600, W = S * 2, H = S * 2, ox = S / 2, oy = S * 1.5;
+    canvas.width = W; canvas.height = H;
+    metrics = {};
+    DIGITS.forEach((d) => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.font = `${state.weight} ${S}px Poppins`;
+      ctx.fillStyle = "#000";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(d, ox, oy);
+      const px = ctx.getImageData(0, 0, W, H).data;
+      let x0 = W, x1 = -1, y0 = H, y1 = -1;
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          if (px[(y * W + x) * 4 + 3] > 127) {
+            if (x < x0) x0 = x; if (x > x1) x1 = x;
+            if (y < y0) y0 = y; if (y > y1) y1 = y;
+          }
+        }
+      }
+      metrics[d] = {
+        left: (ox - x0) / S, right: (x1 + 1 - ox) / S,
+        ascent: (oy - y0) / S, descent: (y1 + 1 - oy) / S,
+      };
+    });
+  }
+
+  // Each digit is fit to the same ink height (like the original file), then
+  // condensed horizontally by the Width setting, and never wider than the trim.
+  const FS = 100; // font-size used inside the SVG; transforms scale it to inches
+  function digitTransform(d) {
+    const m = metrics[d];
+    const inkH = m.ascent + m.descent, inkW = m.left + m.right;
+    const sy = state.height / inkH;
+    let sx = sy * (state.width / 100);
+    const maxW = TRIM_W - SIDE_PAD * 2;
+    if (inkW * sx > maxW) sx = maxW / inkW;
+    const x = TX + (TRIM_W - inkW * sx) / 2 + m.left * sx;
+    const y = TY + (TRIM_H - state.height) / 2 + m.ascent * sy;
+    return { x, y, sx: sx / FS, sy: sy / FS };
+  }
+
+  function cropMarks() {
+    if (!state.crops) return "";
+    const L = TX, R = TX + TRIM_W, T = TY, B = TY + TRIM_H;
+    const g = MARK_GAP, n = MARK_LEN;
+    const lines = [
+      // top-left
+      [L, T - g, L, T - g - n], [L - g, T, L - g - n, T],
+      // top-right
+      [R, T - g, R, T - g - n], [R + g, T, R + g + n, T],
+      // bottom-left
+      [L, B + g, L, B + g + n], [L - g, B, L - g - n, B],
+      // bottom-right
+      [R, B + g, R, B + g + n], [R + g, B, R + g + n, B],
+    ];
+    return `<g stroke="#000" stroke-width="${MARK_STROKE}" fill="none">` +
+      lines.map(([x1, y1, x2, y2]) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`).join("") + `</g>`;
+  }
+
+  function trimLine() {
+    if (!state.trim) return "";
+    // 0% = white, 100% = mid gray. Kept light on purpose.
+    const v = Math.round(255 - (state.trim / 100) * 127);
+    const c = `rgb(${v},${v},${v})`;
+    return `<rect x="${TX}" y="${TY}" width="${TRIM_W}" height="${TRIM_H}" fill="none" stroke="${c}" stroke-width="${TRIM_STROKE}"/>`;
+  }
+
+  function pageSVG(d) {
+    const t = digitTransform(d);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_W} ${PAGE_H}" preserveAspectRatio="xMidYMid meet">` +
+      `<rect width="${PAGE_W}" height="${PAGE_H}" fill="#fff"/>` +
+      trimLine() + cropMarks() +
+      `<text transform="translate(${t.x} ${t.y}) scale(${t.sx} ${t.sy})" font-family="Poppins" font-weight="${state.weight}" font-size="${FS}" fill="${INK}">${d}</text>` +
+      `</svg>`;
+  }
+
+  function renderQueue() {
+    queueEl.innerHTML = "";
+    if (!state.queue.length) {
+      queueEl.innerHTML = `<span class="empty">Nothing yet. Tap numbers above.</span>`;
+    }
+    state.queue.forEach((d, i) => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.innerHTML = `${d}<button type="button" title="Remove">×</button>`;
+      chip.querySelector("button").addEventListener("click", () => { state.queue.splice(i, 1); update(); });
+      queueEl.appendChild(chip);
+    });
+    const counts = {};
+    state.queue.forEach((d) => (counts[d] = (counts[d] || 0) + 1));
+    pad.querySelectorAll(".count").forEach((el) => {
+      const c = counts[el.dataset.d] || 0;
+      el.textContent = c;
+      el.classList.toggle("on", c > 0);
+    });
+  }
+
+  function renderPages() {
+    const html = state.queue.map((d) => `<div class="page">${pageSVG(d)}</div>`).join("");
+    pagesEl.innerHTML = html || `<div class="placeholder">Your pages will show up here.</div>`;
+    printRoot.innerHTML = html;
+    const n = state.queue.length;
+    $("pageCount").textContent = `${n} page${n === 1 ? "" : "s"}`;
+    $("print").disabled = n === 0;
+  }
+
+  function update() {
+    renderQueue();
+    renderPages();
+    save();
+  }
+
+  // Controls
+  $("addTyped").addEventListener("click", addTyped);
+  $("typed").addEventListener("keydown", (e) => { if (e.key === "Enter") addTyped(); });
+  function addTyped() {
+    const digits = ($("typed").value.match(/[0-9]/g) || []);
+    if (!digits.length) return;
+    state.queue.push(...digits);
+    $("typed").value = "";
+    update();
+  }
+  $("undo").addEventListener("click", () => { state.queue.pop(); update(); });
+  $("clear").addEventListener("click", () => { state.queue = []; update(); });
+
+  const weightEl = $("weight"), heightEl = $("height"), widthEl = $("width"), trimEl = $("trim"), cropsEl = $("crops");
+  weightEl.value = state.weight; heightEl.value = state.height; widthEl.value = state.width; trimEl.value = state.trim; cropsEl.checked = state.crops;
+  const showOutputs = () => {
+    $("heightOut").textContent = `${state.height} in`;
+    $("widthOut").textContent = `${state.width}%`;
+    $("trimOut").textContent = state.trim ? `${state.trim}%` : "Off";
+  };
+  weightEl.addEventListener("change", async () => { state.weight = weightEl.value; await loadFont(); measureAll(); update(); });
+  heightEl.addEventListener("input", () => { state.height = parseFloat(heightEl.value); showOutputs(); update(); });
+  widthEl.addEventListener("input", () => { state.width = parseInt(widthEl.value, 10); showOutputs(); update(); });
+  trimEl.addEventListener("input", () => { state.trim = parseInt(trimEl.value, 10); showOutputs(); update(); });
+  cropsEl.addEventListener("change", () => { state.crops = cropsEl.checked; update(); });
+  $("print").addEventListener("click", async () => { await document.fonts.ready; window.print(); });
+
+  const loadFont = () => document.fonts.load(`${state.weight} 100px Poppins`, "0123456789").catch(() => {});
+
+  // Start once the font is in, so measurements are real.
+  showOutputs();
+  Promise.all(["600", "700", "800"].map((w) => document.fonts.load(`${w} 100px Poppins`, "0123456789")))
+    .catch(() => {})
+    .then(() => { measureAll(); update(); });
+})();
+</script>
+</body>
+</html>
