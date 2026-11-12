@@ -49,26 +49,33 @@
   .sign { container-type: inline-size; background: #fff; border: 1px solid #ebe9e5; border-radius: 6px;
     box-shadow: 0 10px 30px -12px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.05); padding: 4.5cqw 3cqw 4cqw; text-align: center;
     max-width: 1100px; margin: 0 auto; background-image: linear-gradient(180deg, #fff 0%, #fcfcfb 100%); }
-  .sign-title { margin: 0 auto; font-weight: 800; font-size: 7cqw; line-height: 1.02; letter-spacing: -.01em; text-transform: uppercase; color: var(--ink);
-    outline: none; border-radius: 6px; padding: 0 1cqw; display: inline-block; max-width: 80%; }
+  .sign-title { margin: 0 auto; font-weight: 800; font-size: 7cqw; max-width: 100%; line-height: 1.02; letter-spacing: -.01em; text-transform: uppercase; color: var(--ink);
+    outline: none; border-radius: 6px; padding: 0 1cqw; display: inline-block; }
   .sign-head { display: flex; align-items: center; justify-content: center; gap: 2cqw; }
   .sign-icon { width: 14cqw; height: 14cqw; flex: none; display: none; }
   .sign-icon svg { width: 100%; height: 100%; display: block; }
   .sign.has-icons .sign-icon { display: block; }
-  .sign.has-icons .sign-title { max-width: 62%; font-size: 6cqw; }
+  .sign.has-icons .sign-titles { max-width: 66%; }
+  .sign.has-icons .sign-title { font-size: 6cqw; max-width: 100%; }
+  .sign-titles { display: flex; flex-direction: column; align-items: center; min-width: 0; flex: 0 1 auto; }
+  .sign-kicker { font-weight: 800; font-size: 3.4cqw; line-height: 1.1; text-transform: uppercase; color: var(--ink); outline: none; border-radius: 4px; padding: 0 .8cqw; }
+  .sign-kicker:empty { display: none; }
+  .sign-kicker:hover { background: #faf9f7; }
+  .sign-kicker:focus { background: #f5f4f1; box-shadow: 0 0 0 2px var(--accent-soft); display: block; }
   .sign-title:hover { background: #faf9f7; }
   .sign-title:focus { background: #f5f4f1; box-shadow: 0 0 0 2px var(--accent-soft); }
-  .sign-row { display: flex; align-items: center; justify-content: center; gap: .8cqw; margin: 3.4cqw 0 2.6cqw; flex-wrap: nowrap; }
-  .slot { width: 5.6cqw; height: 7.6cqw; border: 1px solid #e7cfcf; background: #fff; border-radius: 2px; cursor: pointer;
-    display: grid; place-items: center; font: 700 5.6cqw/1 "Poppins", sans-serif; color: var(--ink); padding: 0; position: relative;
+  .sign-row { --k: 1; display: flex; align-items: center; justify-content: center; gap: calc(.8cqw * var(--k)); margin: 3.4cqw 0 2.6cqw; flex-wrap: nowrap; }
+  .slot { width: calc(5.6cqw * var(--k)); height: calc(7.6cqw * var(--k)); border: 1px solid #e7cfcf; background: #fff; border-radius: 2px; cursor: pointer;
+    display: grid; place-items: center; font: 700 calc(5.6cqw * var(--k))/1 "Poppins", sans-serif; color: var(--ink); padding: 0; position: relative;
     transition: border-color .1s, box-shadow .1s, background .1s; }
   .slot:hover { border-color: #c9b2b2; background: #fdfcfc; }
   .slot.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft), 0 0 0 1px var(--accent) inset; }
   .slot.blank::after { content: ""; width: 34%; height: 2px; background: #eadede; position: absolute; bottom: 18%; }
   .slot.blank.active::after { background: var(--accent); animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: 0; } }
-  .sep { font-weight: 800; font-size: 6.4cqw; line-height: 1; margin: 0 .3cqw; }
-  .word { font-weight: 800; font-size: 4.6cqw; margin: 0 1.6cqw; letter-spacing: -.01em; }
+  .sep { font-weight: 800; font-size: calc(6.4cqw * var(--k)); line-height: 1; margin: 0 calc(.3cqw * var(--k)); }
+  .sep.amp { font-size: calc(5.4cqw * var(--k)); margin: 0 calc(1.2cqw * var(--k)); }
+  .word { font-weight: 800; font-size: calc(4.6cqw * var(--k)); margin: 0 calc(1.6cqw * var(--k)); white-space: nowrap; letter-spacing: -.01em; }
   .sign-foot { font-weight: 700; font-size: 2.2cqw; letter-spacing: .01em; text-transform: uppercase; }
   .sign-note { margin: 0 auto; font-size: 1.9cqw; font-weight: 600; color: var(--muted); outline: none; border-radius: 4px; padding: 0 .6cqw; display: inline-block; min-width: 10cqw; }
   .sign-note:hover { background: #faf9f7; }
@@ -239,6 +246,10 @@
         </select>
       </div>
       <div class="field">
+        <label for="kickerInput">Line above event name</label>
+        <input type="text" id="kickerInput" maxlength="60" autocomplete="off" placeholder="Optional, e.g. Join us for our">
+      </div>
+      <div class="field">
         <label for="titleInput">Event name</label>
         <input type="text" id="titleInput" maxlength="80" autocomplete="off" placeholder="e.g. Tree Lighting &amp; Holiday Market">
       </div>
@@ -250,7 +261,10 @@
     <div class="sign">
       <div class="sign-head">
         <div class="sign-icon" id="iconL"></div>
-        <div class="sign-title" id="signTitle" contenteditable="true" spellcheck="false"></div>
+        <div class="sign-titles">
+          <div class="sign-kicker" id="signKicker" contenteditable="true" spellcheck="false"></div>
+          <div class="sign-title" id="signTitle" contenteditable="true" spellcheck="false"></div>
+        </div>
         <div class="sign-icon" id="iconR"></div>
       </div>
       <div class="sign-row" id="signRow"></div>
@@ -394,26 +408,46 @@
   const DEFAULT_TITLE = "Event Name";
   const DEFAULT_NOTE = "*Please display numbers as shown above";
 
-  // Banner layout: XX / XX FROM XX : XX TO XX : XX
-  const LAYOUT = [
-    { slots: 2 }, { sep: "/" }, { slots: 2 },
-    { word: "From" },
-    { slots: 2 }, { sep: ":" }, { slots: 2 },
-    { word: "To" },
-    { slots: 2 }, { sep: ":" }, { slots: 2 },
-  ];
-  const SLOT_COUNT = LAYOUT.reduce((n, p) => n + (p.slots || 0), 0);
+  // Banner layouts.
+  //   standard: XX / XX FROM XX : XX TO XX : XX
+  //   summer:   X / XX & X / XX & X / XX FROM 6-9PM
+  const LAYOUTS = {
+    standard: { scale: 1, parts: [
+      { slots: 2 }, { sep: "/" }, { slots: 2 },
+      { word: "From" },
+      { slots: 2 }, { sep: ":" }, { slots: 2 },
+      { word: "To" },
+      { slots: 2 }, { sep: ":" }, { slots: 2 },
+    ] },
+    summer: { scale: 0.74, parts: [
+      { slots: 1 }, { sep: "/" }, { slots: 2 },
+      { amp: "&" },
+      { slots: 1 }, { sep: "/" }, { slots: 2 },
+      { amp: "&" },
+      { slots: 1 }, { sep: "/" }, { slots: 2 },
+      { word: "From 6-9pm" },
+    ] },
+  };
+  let LAYOUT, SLOT_COUNT;
+  const useLayout = (key) => {
+    LAYOUT = LAYOUTS[key].parts;
+    SLOT_COUNT = LAYOUT.reduce((n, p) => n + (p.slots || 0), 0);
+  };
 
   // ---------- State ----------
   const STORE_KEY = "event-numbers-v2";
   const state = {
-    tab: "banner", title: DEFAULT_TITLE, note: DEFAULT_NOTE, preset: "custom", graphic: "none",
-    slots: Array(SLOT_COUNT).fill(""), copies: 1, order: "banner",
+    tab: "banner", title: DEFAULT_TITLE, kicker: "", note: DEFAULT_NOTE, preset: "custom", graphic: "none",
+    layout: "standard", slotStore: {}, slots: [], copies: 1, order: "banner",
     queue: [], weight: "700", height: 8.5, width: 90, trim: 20, trimOn: false, crops: true,
   };
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE_KEY) || "{}")); } catch (e) {}
   if (state.title === "Event Numbers") state.title = DEFAULT_TITLE;
   if (typeof state.note !== "string") state.note = DEFAULT_NOTE;
+  if (!LAYOUTS[state.layout]) state.layout = "standard";
+  if (typeof state.kicker !== "string") state.kicker = "";
+  if (!state.slotStore || typeof state.slotStore !== "object") state.slotStore = {};
+  useLayout(state.layout);
   if (!Array.isArray(state.slots) || state.slots.length !== SLOT_COUNT) state.slots = Array(SLOT_COUNT).fill("");
   const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} };
   let active = 0;
@@ -443,6 +477,9 @@
   }
   bindText("title", titleEl, titleInput, DEFAULT_TITLE);
   bindText("note", noteEl, noteInput, null);
+  const kickerEl = $("signKicker"), kickerInput = $("kickerInput");
+  kickerEl.textContent = kickerInput.value = state.kicker;
+  bindText("kicker", kickerEl, kickerInput, null);
 
   // Event presets + corner graphics
   const eventSel = $("eventSel"), graphicSel = $("graphicSel"), signEl = document.querySelector(".sign");
@@ -459,9 +496,11 @@
     const ev = EVENTS[state.preset];
     if (ev) {
       state.title = ev.name; titleEl.textContent = titleInput.value = ev.name;
+      state.kicker = ev.kicker || ""; kickerEl.textContent = kickerInput.value = state.kicker;
       state.graphic = state.preset; graphicSel.value = state.graphic;
+      setLayout(ev.layout || "standard");
     }
-    renderIcons(); save();
+    renderIcons(); update();
   });
   graphicSel.addEventListener("change", () => { state.graphic = graphicSel.value; renderIcons(); save(); });
   // Typing your own name switches the Event menu to Custom (graphics stay as chosen).
@@ -473,23 +512,39 @@
   renderIcons();
 
   const slotEls = [];
-  let si = 0;
-  LAYOUT.forEach((part) => {
-    if (part.slots) {
-      for (let k = 0; k < part.slots; k++) {
-        const i = si++;
-        const b = document.createElement("button");
-        b.type = "button"; b.className = "slot";
-        b.addEventListener("click", () => { active = i; renderSlots(); });
-        rowEl.appendChild(b); slotEls.push(b);
+  function buildRow() {
+    rowEl.innerHTML = ""; slotEls.length = 0;
+    rowEl.style.setProperty("--k", LAYOUTS[state.layout].scale);
+    let si = 0;
+    LAYOUT.forEach((part) => {
+      if (part.slots) {
+        for (let k = 0; k < part.slots; k++) {
+          const i = si++;
+          const b = document.createElement("button");
+          b.type = "button"; b.className = "slot";
+          b.addEventListener("click", () => { active = i; renderSlots(); });
+          rowEl.appendChild(b); slotEls.push(b);
+        }
+      } else {
+        const s = document.createElement("span");
+        s.className = part.sep ? "sep" : part.amp ? "sep amp" : "word";
+        s.textContent = part.sep || part.amp || part.word.toUpperCase();
+        rowEl.appendChild(s);
       }
-    } else {
-      const s = document.createElement("span");
-      s.className = part.sep ? "sep" : "word";
-      s.textContent = part.sep || part.word.toUpperCase();
-      rowEl.appendChild(s);
-    }
-  });
+    });
+  }
+  // Switch layout, keeping each layout's numbers separately.
+  function setLayout(key) {
+    if (key === state.layout) return;
+    state.slotStore[state.layout] = state.slots.slice();
+    state.layout = key;
+    useLayout(key);
+    const saved = state.slotStore[key];
+    state.slots = Array.isArray(saved) && saved.length === SLOT_COUNT ? saved.slice() : Array(SLOT_COUNT).fill("");
+    active = 0;
+    buildRow();
+  }
+  buildRow();
 
   function renderSlots() {
     slotEls.forEach((el, i) => {
@@ -518,7 +573,7 @@
   document.addEventListener("keydown", (e) => {
     if (state.tab !== "banner") return;
     const t = e.target;
-    if (t === titleEl || t === noteEl || t.tagName === "INPUT" || t.tagName === "SELECT") return;
+    if (t === titleEl || t === noteEl || t === kickerEl || t.tagName === "INPUT" || t.tagName === "SELECT") return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (/^[0-9]$/.test(e.key)) { e.preventDefault(); setSlot(e.key); }
     else if (e.key === " ") { e.preventDefault(); setSlot(""); }
@@ -788,10 +843,12 @@
     // Title: uppercase, as big as fits in two lines.
     const title = (state.title || DEFAULT_TITLE).trim().toUpperCase();
     const iconEv = window.BannerIcons.EVENTS[state.graphic];
-    const ICON_SZ = 1.6, ICON_X = 0.7;
-    const maxTitleW = iconEv ? MOCK_W - 2 * (ICON_X + ICON_SZ + 0.3) : 9.4;
+    const ICON_SZ = 1.4, ICON_X = 0.55;
+    const maxTitleW = iconEv ? MOCK_W - 2 * (ICON_X + ICON_SZ + 0.2) : 9.4;
     let size = 1.0, lines;
-    for (;;) {
+    const oneLine = maxTitleW / fonts["800"].getAdvanceWidth(title, 1);
+    if (oneLine >= 0.62) { size = Math.min(1.0, oneLine); lines = [title]; }
+    else for (;;) {
       lines = wrapLines(title, "800", size, maxTitleW);
       const widest = Math.max(...lines.map((l) => fonts["800"].getAdvanceWidth(l, size)));
       if ((lines.length <= 2 && widest <= maxTitleW) || size <= 0.42) break;
@@ -802,12 +859,13 @@
     // Number row, measured at scale 1 then fit to the page width.
     const slotW = 0.64, slotH = 0.88, gap = 0.09;
     const digitH = 0.6, digitSize = digitH / capOf("700");
-    const wordSize = 0.5 / capOf("800"), sepSize = 0.8 / capOf("800");
+    const wordSize = 0.5 / capOf("800"), sepSize = 0.8 / capOf("800"), ampSize = 0.62 / capOf("800");
     const items = [];
     let si2 = 0;
     LAYOUT.forEach((part, i) => {
       if (part.slots) for (let k = 0; k < part.slots; k++) items.push({ type: "slot", w: slotW, v: state.slots[si2++] });
       else if (part.sep) items.push({ type: "sep", str: part.sep, w: inkWidth(part.sep, "800", sepSize), pad: 0.1 });
+      else if (part.amp) items.push({ type: "amp", str: part.amp, w: inkWidth(part.amp, "800", ampSize), pad: 0.22 });
       else items.push({ type: "word", str: part.word.toUpperCase(), w: inkWidth(part.word.toUpperCase(), "800", wordSize), pad: 0.28 });
     });
     let rowW = 0;
@@ -816,13 +874,23 @@
 
     const note = (state.note || "").trim();
     const noteSize = 0.24;
-    const blockH = cap + (lines.length - 1) * lead + 0.6 + slotH * k + (note ? 0.5 + noteSize * 0.7 : 0);
+    const kicker = (state.kicker || "").trim().toUpperCase();
+    let kSize = 0.32 / capOf("800");
+    if (kicker) { const kw = fonts["800"].getAdvanceWidth(kicker, kSize); if (kw > maxTitleW) kSize *= maxTitleW / kw; }
+    const kCap = kicker ? capOf("800") * kSize : 0, kGap = kicker ? 0.16 : 0;
+    const blockH = kCap + kGap + cap + (lines.length - 1) * lead + 0.6 + slotH * k + (note ? 0.5 + noteSize * 0.7 : 0);
     let y = Math.max(0.8, (MOCK_H - blockH) / 2 - 0.4);
+    const headTop = y;
+    if (kicker) {
+      const p = fonts["800"].getPath(kicker, MOCK_W / 2 - fonts["800"].getAdvanceWidth(kicker, kSize) / 2, y + kCap, kSize);
+      shapes.push({ kind: "path", cmds: p.commands, fill: INKC });
+      y += kCap + kGap;
+    }
 
     if (iconEv) {
-      const titleH = cap + (lines.length - 1) * lead;
+      const titleH = (y - headTop) + cap + (lines.length - 1) * lead;
       const isz = ICON_SZ;
-      const iy = y + titleH / 2 - isz / 2;
+      const iy = headTop + titleH / 2 - isz / 2;
       shapes.push({ kind: "icon", key: iconEv.left, x: ICON_X, y: iy, size: isz });
       shapes.push({ kind: "icon", key: iconEv.right, x: MOCK_W - ICON_X - isz, y: iy, size: isz });
     }
@@ -842,7 +910,7 @@
         shapes.push({ kind: "rect", x, y: rowTop, w: slotW * k, h: slotH * k, stroke: BOX, sw: 0.75 / 72 });
         if (it.v) shapes.push({ kind: "path", cmds: inkText(it.v, "700", digitSize * k, x + (slotW * k) / 2, rowMid).cmds, fill: INKC });
       } else {
-        const sz = (it.type === "sep" ? sepSize : wordSize) * k;
+        const sz = (it.type === "sep" ? sepSize : it.type === "amp" ? ampSize : wordSize) * k;
         shapes.push({ kind: "path", cmds: inkText(it.str, "800", sz, x + (it.w * k) / 2, rowMid).cmds, fill: INKC });
       }
       x += it.w * k + (it.pad || 0) * k;

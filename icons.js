@@ -130,7 +130,7 @@
   const EVENTS = {
     egg:       { name: "Egg Hunt", left: "egg", right: "bunny" },
     spring:    { name: "Spring Market", left: "tulip", right: "seedling" },
-    summer:    { name: "Summer Concert & Market Series", left: "guitar", right: "notes" },
+    summer:    { name: "Summer Concerts", kicker: "Join us for our", layout: "summer", left: "guitar", right: "notes" },
     halloween: { name: "Halloween Hunt", left: "pumpkin", right: "candy" },
     holiday:   { name: "Tree Lighting & Holiday Market", left: "tree", right: "ornament" },
   };
