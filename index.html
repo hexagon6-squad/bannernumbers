@@ -214,18 +214,18 @@
 
   <div class="grid">
     <div class="stack">
-      <div class="card">
-        <h2>How to print</h2>
-        <ol class="steps">
+      <details class="card" id="howBox" open>
+        <summary>How to print</summary>
+        <ol class="steps" style="margin-top:12px">
           <li><b data-panel="banner">Fill in the banner</b><b data-panel="pick" hidden>Pick your numbers</b>
-            <span data-panel="banner">Click a box on the banner, then tap a number in the row under it. Check "Numbers you need."</span>
+            <span data-panel="banner">Click a box on the banner, then tap a number in the Fill the box row. Open "Numbers you need" to see the count.</span>
             <span data-panel="pick" hidden>Tap 0-9 or type a set. Each number is one page.</span></li>
-          <li><b>Click Print</b><span>The green Print button below opens the PDF preview in a new tab. For the sign itself, use "Print banner mockup."</span></li>
+          <li><b>Click Print</b><span>The green Print button at the bottom of this panel opens the PDF preview in a new tab. For the sign itself, use "Print banner mockup."</span></li>
           <li><b>Click print in the preview</b><span>Use the print icon in the PDF preview tab. If no tab opens, allow pop-ups, or use Download PDF and open the file.</span></li>
           <li><b>Print at Actual size</b><span>Letter paper, Scale <b>Actual size</b> or <b>100%</b>. Not "Fit."</span></li>
           <li><b>Cut on the crop marks</b><span>Each number trims to 6 x 9 in. The faint gray line shows the edge.</span></li>
         </ol>
-      </div>
+      </details>
 
       <details class="card need" data-panel="banner" id="needBox">
         <summary>Numbers you need<span class="need-sum" id="needSum">None yet</span></summary>
@@ -484,6 +484,9 @@
   }
   $("copiesMinus").addEventListener("click", () => { state.copies = Math.max(1, state.copies - 1); update(); });
   $("copiesPlus").addEventListener("click", () => { state.copies = Math.min(20, state.copies + 1); update(); });
+  const howBox = $("howBox");
+  if (state.howOpen === false) howBox.open = false;
+  howBox.addEventListener("toggle", () => { state.howOpen = howBox.open; save(); });
   const needBox = $("needBox");
   if (state.needOpen) needBox.open = true;
   needBox.addEventListener("toggle", () => { state.needOpen = needBox.open; save(); });
