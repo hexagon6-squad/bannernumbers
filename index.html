@@ -33,6 +33,14 @@
   .mock-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
   .mock-top h2 { margin: 0; }
   .mock-top span { font-size: 13px; color: var(--muted); }
+  .mock-actions { display: flex; gap: 8px; }
+  .mock-actions .btn { padding: 7px 12px; font-size: 13px; }
+  .mock-actions .btn.dark { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .text-fields { display: grid; grid-template-columns: 2fr 1.4fr; gap: 12px; margin: 0 auto 16px; max-width: 1100px; }
+  @media (max-width: 700px) { .text-fields { grid-template-columns: 1fr; } }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+  .field input { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; font: 500 15px "Poppins", sans-serif; color: var(--ink); }
+  .field input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
   .sign { container-type: inline-size; background: #fff; border: 1px solid #ebe9e5; border-radius: 6px;
     box-shadow: 0 10px 30px -12px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.05); padding: 4.5cqw 3cqw 4cqw; text-align: center;
     max-width: 1100px; margin: 0 auto; background-image: linear-gradient(180deg, #fff 0%, #fcfcfb 100%); }
@@ -52,7 +60,9 @@
   .sep { font-weight: 800; font-size: 6.4cqw; line-height: 1; margin: 0 .3cqw; }
   .word { font-weight: 800; font-size: 4.6cqw; margin: 0 1.6cqw; letter-spacing: -.01em; }
   .sign-foot { font-weight: 700; font-size: 2.2cqw; letter-spacing: .01em; text-transform: uppercase; }
-  .sign-note { margin-top: 0; font-size: 1.7cqw; color: var(--muted); }
+  .sign-note { margin: 0 auto; font-size: 1.9cqw; font-weight: 600; color: var(--muted); outline: none; border-radius: 4px; padding: 0 .6cqw; display: inline-block; min-width: 10cqw; }
+  .sign-note:hover { background: #faf9f7; }
+  .sign-note:focus { background: #f5f4f1; box-shadow: 0 0 0 2px var(--accent-soft); }
 
   /* ---------- Keypad ---------- */
   .pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
@@ -148,13 +158,27 @@
   <section class="card mock-card" data-panel="banner">
     <div class="mock-top">
       <h2>Banner mockup</h2>
-      <span>Click a box, then type or tap a number. Click the title to edit it.</span>
+      <div class="mock-actions">
+        <button class="btn" id="mockPrint" type="button">Print mockup</button>
+        <button class="btn dark" id="mockPdf" type="button">Mockup PDF</button>
+      </div>
+    </div>
+    <div class="text-fields">
+      <div class="field">
+        <label for="titleInput">Title</label>
+        <input type="text" id="titleInput" maxlength="80" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="noteInput">Note under the numbers</label>
+        <input type="text" id="noteInput" maxlength="90" autocomplete="off" placeholder="Leave empty for no note">
+      </div>
     </div>
     <div class="sign">
       <div class="sign-title" id="signTitle" contenteditable="true" spellcheck="false"></div>
       <div class="sign-row" id="signRow"></div>
-      <div class="sign-note">*Please display numbers as shown above</div>
+      <div class="sign-note" id="signNote" contenteditable="true" spellcheck="false"></div>
     </div>
+    <p class="hint" style="text-align:center">Click a box, then type or tap a number. The mockup prints on one landscape letter page with your numbers filled in.</p>
   </section>
 
   <div class="grid">
@@ -274,6 +298,7 @@
   const DIGITS = ["1","2","3","4","5","6","7","8","9","0"];
   const DIGITS_SORTED = ["0","1","2","3","4","5","6","7","8","9"];
   const DEFAULT_TITLE = "Event Numbers";
+  const DEFAULT_NOTE = "*Please display numbers as shown above";
 
   // Banner layout: XX / XX FROM XX : XX TO XX : XX
   const LAYOUT = [
@@ -288,11 +313,12 @@
   // ---------- State ----------
   const STORE_KEY = "event-numbers-v2";
   const state = {
-    tab: "banner", title: DEFAULT_TITLE,
+    tab: "banner", title: DEFAULT_TITLE, note: DEFAULT_NOTE,
     slots: Array(SLOT_COUNT).fill(""), copies: 1, order: "banner",
     queue: [], weight: "700", height: 8.5, width: 90, trim: 20, crops: true,
   };
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE_KEY) || "{}")); } catch (e) {}
+  if (typeof state.note !== "string") state.note = DEFAULT_NOTE;
   if (!Array.isArray(state.slots) || state.slots.length !== SLOT_COUNT) state.slots = Array(SLOT_COUNT).fill("");
   const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} };
   let active = 0;
@@ -308,13 +334,20 @@
   tabBtns.forEach((b) => b.addEventListener("click", () => { state.tab = b.dataset.tab; showTab(); update(); }));
 
   // ---------- Banner mockup ----------
-  const titleEl = $("signTitle"), rowEl = $("signRow");
-  titleEl.textContent = state.title;
-  titleEl.addEventListener("input", () => { state.title = titleEl.textContent; save(); });
-  titleEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); titleEl.blur(); } });
-  titleEl.addEventListener("blur", () => {
-    if (!titleEl.textContent.trim()) { titleEl.textContent = DEFAULT_TITLE; state.title = DEFAULT_TITLE; save(); }
-  });
+  const titleEl = $("signTitle"), rowEl = $("signRow"), noteEl = $("signNote");
+  const titleInput = $("titleInput"), noteInput = $("noteInput");
+  titleEl.textContent = titleInput.value = state.title;
+  noteEl.textContent = noteInput.value = state.note;
+  function bindText(key, editable, input, fallback) {
+    editable.addEventListener("input", () => { state[key] = editable.textContent; input.value = state[key]; save(); });
+    editable.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); editable.blur(); } });
+    editable.addEventListener("paste", (e) => { e.preventDefault(); document.execCommand("insertText", false, (e.clipboardData.getData("text") || "").replace(/\s+/g, " ")); });
+    input.addEventListener("input", () => { state[key] = input.value; editable.textContent = input.value; save(); });
+    const fix = () => { if (fallback != null && !state[key].trim()) { state[key] = fallback; editable.textContent = input.value = fallback; save(); } };
+    editable.addEventListener("blur", fix); input.addEventListener("blur", fix);
+  }
+  bindText("title", titleEl, titleInput, DEFAULT_TITLE);
+  bindText("note", noteEl, noteInput, null);
 
   const slotEls = [];
   let si = 0;
@@ -362,7 +395,7 @@
   document.addEventListener("keydown", (e) => {
     if (state.tab !== "banner") return;
     const t = e.target;
-    if (t === titleEl || t.tagName === "INPUT" || t.tagName === "SELECT") return;
+    if (t === titleEl || t === noteEl || t.tagName === "INPUT" || t.tagName === "SELECT") return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (/^[0-9]$/.test(e.key)) { e.preventDefault(); setSlot(e.key); }
     else if (e.key === " ") { e.preventDefault(); setSlot(""); }
@@ -552,12 +585,7 @@
       }
       page.drawSvgPath(pathData(d, PT), { x: 0, y: H, color: ink });
     });
-    const bytes = await doc.save();
-    const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
-    const a = document.createElement("a");
-    a.href = url; a.download = fileName();
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    saveBlob(await doc.save(), fileName());
   }
 
   // ---------- Print: a separate document holding only the pages, so nothing else can rescale them ----------
@@ -565,19 +593,152 @@
   function printPages() {
     const list = currentList();
     if (!list.length) return;
+    printDoc(list.map((d) => pageSVG(d)), "8.5in", "11in", state.tab === "banner" ? state.title : "Numbers");
+  }
+  function printDoc(svgs, W, H, title) {
     if (printFrame) printFrame.remove();
     printFrame = document.createElement("iframe");
     printFrame.setAttribute("aria-hidden", "true");
-    printFrame.style.cssText = "position:fixed;left:-10000px;top:0;width:8.5in;height:11in;border:0;";
+    printFrame.style.cssText = `position:fixed;left:-10000px;top:0;width:${W};height:${H};border:0;`;
     document.body.appendChild(printFrame);
-    const html = `<!DOCTYPE html><html><head><title>${state.tab === "banner" ? state.title : "Numbers"}</title><style>` +
-      `@page{size:8.5in 11in;margin:0}html,body{margin:0;padding:0;background:#fff}` +
-      `.page{width:8.5in;height:11in;overflow:hidden;break-after:page;page-break-after:always}` +
-      `.page:last-child{break-after:auto;page-break-after:auto}svg{display:block;width:8.5in;height:11in}` +
-      `</style></head><body>${list.map((d) => `<div class="page">${pageSVG(d)}</div>`).join("")}</body></html>`;
+    const safe = String(title).replace(/[<>&]/g, "");
+    const html = `<!DOCTYPE html><html><head><title>${safe}</title><style>` +
+      `@page{size:${W} ${H};margin:0}html,body{margin:0;padding:0;background:#fff}` +
+      `.page{width:${W};height:${H};overflow:hidden;break-after:page;page-break-after:always}` +
+      `.page:last-child{break-after:auto;page-break-after:auto}svg{display:block;width:${W};height:${H}}` +
+      `</style></head><body>${svgs.map((svg) => `<div class="page">${svg}</div>`).join("")}</body></html>`;
     const doc = printFrame.contentDocument;
     doc.open(); doc.write(html); doc.close();
     setTimeout(() => { printFrame.contentWindow.focus(); printFrame.contentWindow.print(); }, 200);
+  }
+
+  // ---------- Banner mockup sheet (landscape letter). Built once as shapes, drawn as SVG or PDF. ----------
+  const MOCK_W = 11, MOCK_H = 8.5;
+  function cmdsToD(cmds, unit) {
+    const f = (v) => +(v * unit).toFixed(4);
+    return cmds.map((c) => {
+      switch (c.type) {
+        case "M": return `M${f(c.x)} ${f(c.y)}`;
+        case "L": return `L${f(c.x)} ${f(c.y)}`;
+        case "Q": return `Q${f(c.x1)} ${f(c.y1)} ${f(c.x)} ${f(c.y)}`;
+        case "C": return `C${f(c.x1)} ${f(c.y1)} ${f(c.x2)} ${f(c.y2)} ${f(c.x)} ${f(c.y)}`;
+        default: return "Z";
+      }
+    }).join("");
+  }
+  // Text centered on (cx, cy) by its ink box. Returns { cmds, w, h }.
+  function inkText(str, weight, size, cx, cy) {
+    const f = fonts[weight];
+    const bb = f.getPath(str, 0, 0, size).getBoundingBox();
+    const w = bb.x2 - bb.x1, h = bb.y2 - bb.y1;
+    const p = f.getPath(str, cx - bb.x1 - w / 2, cy - bb.y1 - h / 2, size);
+    return { cmds: p.commands, w, h };
+  }
+  const inkWidth = (str, weight, size) => { const b = fonts[weight].getPath(str, 0, 0, size).getBoundingBox(); return b.x2 - b.x1; };
+  function wrapLines(text, weight, size, maxW) {
+    const f = fonts[weight], words = text.split(/\s+/).filter(Boolean), lines = [];
+    let cur = "";
+    words.forEach((w) => {
+      const t = cur ? cur + " " + w : w;
+      if (cur && f.getAdvanceWidth(t, size) > maxW) { lines.push(cur); cur = w; } else cur = t;
+    });
+    if (cur) lines.push(cur);
+    return lines;
+  }
+
+  function mockShapes() {
+    const shapes = [];
+    const INKC = "#231f20", BOX = "#e2c9c9", NOTE = "#6b6866";
+    const capOf = (w) => fonts[w].tables.os2.sCapHeight / fonts[w].unitsPerEm;
+
+    // Title: uppercase, as big as fits in two lines.
+    const title = (state.title || DEFAULT_TITLE).trim().toUpperCase();
+    const maxTitleW = 9.4;
+    let size = 1.0, lines;
+    for (;;) {
+      lines = wrapLines(title, "800", size, maxTitleW);
+      const widest = Math.max(...lines.map((l) => fonts["800"].getAdvanceWidth(l, size)));
+      if ((lines.length <= 2 && widest <= maxTitleW) || size <= 0.42) break;
+      size -= 0.02;
+    }
+    const lead = size * 1.02, cap = capOf("800") * size;
+
+    // Number row, measured at scale 1 then fit to the page width.
+    const slotW = 0.64, slotH = 0.88, gap = 0.09;
+    const digitH = 0.6, digitSize = digitH / capOf("700");
+    const wordSize = 0.5 / capOf("800"), sepSize = 0.8 / capOf("800");
+    const items = [];
+    let si2 = 0;
+    LAYOUT.forEach((part, i) => {
+      if (part.slots) for (let k = 0; k < part.slots; k++) items.push({ type: "slot", w: slotW, v: state.slots[si2++] });
+      else if (part.sep) items.push({ type: "sep", str: part.sep, w: inkWidth(part.sep, "800", sepSize), pad: 0.1 });
+      else items.push({ type: "word", str: part.word.toUpperCase(), w: inkWidth(part.word.toUpperCase(), "800", wordSize), pad: 0.28 });
+    });
+    let rowW = 0;
+    items.forEach((it, i) => { rowW += it.w + (it.pad || 0) * 2 + (i ? gap : 0); });
+    const k = Math.min(1, 9.6 / rowW);
+
+    const note = (state.note || "").trim();
+    const noteSize = 0.24;
+    const blockH = cap + (lines.length - 1) * lead + 0.6 + slotH * k + (note ? 0.5 + noteSize * 0.7 : 0);
+    let y = Math.max(0.8, (MOCK_H - blockH) / 2 - 0.4);
+
+    lines.forEach((l, i) => {
+      const base = y + cap + i * lead;
+      const p = fonts["800"].getPath(l, MOCK_W / 2 - fonts["800"].getAdvanceWidth(l, size) / 2, base, size);
+      shapes.push({ kind: "path", cmds: p.commands, fill: INKC });
+    });
+    y += cap + (lines.length - 1) * lead + 0.6;
+
+    const rowTop = y, rowMid = rowTop + (slotH * k) / 2;
+    let x = (MOCK_W - rowW * k) / 2;
+    items.forEach((it, i) => {
+      if (i) x += gap * k;
+      x += (it.pad || 0) * k;
+      if (it.type === "slot") {
+        shapes.push({ kind: "rect", x, y: rowTop, w: slotW * k, h: slotH * k, stroke: BOX, sw: 0.75 / 72 });
+        if (it.v) shapes.push({ kind: "path", cmds: inkText(it.v, "700", digitSize * k, x + (slotW * k) / 2, rowMid).cmds, fill: INKC });
+      } else {
+        const sz = (it.type === "sep" ? sepSize : wordSize) * k;
+        shapes.push({ kind: "path", cmds: inkText(it.str, "800", sz, x + (it.w * k) / 2, rowMid).cmds, fill: INKC });
+      }
+      x += it.w * k + (it.pad || 0) * k;
+    });
+    y = rowTop + slotH * k;
+
+    if (note) {
+      const nb = y + 0.5;
+      const nw = fonts["600"].getAdvanceWidth(note, noteSize);
+      const p = fonts["600"].getPath(note, MOCK_W / 2 - nw / 2, nb, noteSize);
+      shapes.push({ kind: "path", cmds: p.commands, fill: NOTE });
+    }
+    return shapes;
+  }
+  function mockSVG() {
+    const body = mockShapes().map((sh) => sh.kind === "rect"
+      ? `<rect x="${sh.x}" y="${sh.y}" width="${sh.w}" height="${sh.h}" fill="none" stroke="${sh.stroke}" stroke-width="${sh.sw}"/>`
+      : `<path d="${cmdsToD(sh.cmds, 1)}" fill="${sh.fill}"/>`).join("");
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="11in" height="8.5in" viewBox="0 0 ${MOCK_W} ${MOCK_H}"><rect width="${MOCK_W}" height="${MOCK_H}" fill="#fff"/>${body}</svg>`;
+  }
+  const hexRGB = (h) => { const n = parseInt(h.slice(1), 16); return PDFLib.rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255); };
+  async function mockPDF() {
+    const { PDFDocument } = PDFLib;
+    const doc = await PDFDocument.create();
+    doc.setTitle(`${state.title} mockup`);
+    const PT = 72, H = MOCK_H * PT;
+    const page = doc.addPage([MOCK_W * PT, H]);
+    mockShapes().forEach((sh) => {
+      if (sh.kind === "rect") page.drawRectangle({ x: sh.x * PT, y: (MOCK_H - sh.y - sh.h) * PT, width: sh.w * PT, height: sh.h * PT, borderColor: hexRGB(sh.stroke), borderWidth: sh.sw * PT });
+      else page.drawSvgPath(cmdsToD(sh.cmds, PT), { x: 0, y: H, color: hexRGB(sh.fill) });
+    });
+    saveBlob(await doc.save(), fileName().replace(/\.pdf$/, "-mockup.pdf"));
+  }
+  function saveBlob(bytes, name) {
+    const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 
   // ---------- Preview + print ----------
@@ -611,6 +772,8 @@
   trimEl.addEventListener("input", () => { state.trim = parseInt(trimEl.value, 10); showOutputs(); update(); });
   cropsEl.addEventListener("change", () => { state.crops = cropsEl.checked; update(); });
   $("print").addEventListener("click", printPages);
+  $("mockPrint").addEventListener("click", () => printDoc([mockSVG()], "11in", "8.5in", `${state.title} mockup`));
+  $("mockPdf").addEventListener("click", () => mockPDF().catch((e) => alert("Could not make the PDF: " + e.message)));
   $("pdf").addEventListener("click", () => downloadPDF().catch((e) => alert("Could not make the PDF: " + e.message)));
 
   showOutputs(); showTab(); renderSlots(); renderTally(); renderQueue();
