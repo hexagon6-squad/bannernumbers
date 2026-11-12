@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bethany Village Event Numbers</title>
+<title>Event Numbers</title>
 <style>
   @font-face { font-family: "Poppins"; font-weight: 600; src: url("fonts/poppins-latin-600-normal.woff2") format("woff2"); }
   @font-face { font-family: "Poppins"; font-weight: 700; src: url("fonts/poppins-latin-700-normal.woff2") format("woff2"); }
@@ -52,7 +52,7 @@
   .sep { font-weight: 800; font-size: 6.4cqw; line-height: 1; margin: 0 .3cqw; }
   .word { font-weight: 800; font-size: 4.6cqw; margin: 0 1.6cqw; letter-spacing: -.01em; }
   .sign-foot { font-weight: 700; font-size: 2.2cqw; letter-spacing: .01em; text-transform: uppercase; }
-  .sign-note { margin-top: 1.6cqw; font-size: 1.7cqw; color: var(--muted); }
+  .sign-note { margin-top: 0; font-size: 1.7cqw; color: var(--muted); }
 
   /* ---------- Keypad ---------- */
   .pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
@@ -129,6 +129,8 @@
     #print-root svg { width: 8.5in; height: 11in; display: block; }
   }
 </style>
+<script src="lib/opentype.min.js"></script>
+<script src="lib/pdf-lib.min.js"></script>
 </head>
 <body>
 <header>
@@ -151,7 +153,6 @@
     <div class="sign">
       <div class="sign-title" id="signTitle" contenteditable="true" spellcheck="false"></div>
       <div class="sign-row" id="signRow"></div>
-      <div class="sign-foot">Visit www.bethanyvillage.com for more details</div>
       <div class="sign-note">*Please display numbers as shown above</div>
     </div>
   </section>
@@ -245,8 +246,9 @@
       </details>
 
       <div class="card">
-        <button class="btn primary" id="print" disabled>Print</button>
-        <p class="hint">In the print dialog set <b>Scale: 100%</b> (or "Actual size") and <b>Margins: None</b>. Choose "Save as PDF" to send it to someone else.</p>
+        <button class="btn primary" id="pdf" disabled>Download PDF</button>
+        <div class="row"><button class="btn grow" id="print" disabled>Print</button></div>
+        <p class="hint"><b>Download PDF</b> is the surest way to get full size: open the PDF and print at <b>Actual size</b> / 100%. If you print straight from here, set Margins to None and Scale to 100%.</p>
       </div>
     </div>
 
@@ -271,7 +273,7 @@
   const INK = "#231f20", SIDE_PAD = 0.04, FS = 100;
   const DIGITS = ["1","2","3","4","5","6","7","8","9","0"];
   const DIGITS_SORTED = ["0","1","2","3","4","5","6","7","8","9"];
-  const DEFAULT_TITLE = "Bethany Village Event Numbers";
+  const DEFAULT_TITLE = "Event Numbers";
 
   // Banner layout: XX / XX FROM XX : XX TO XX : XX
   const LAYOUT = [
@@ -284,7 +286,7 @@
   const SLOT_COUNT = LAYOUT.reduce((n, p) => n + (p.slots || 0), 0);
 
   // ---------- State ----------
-  const STORE_KEY = "event-numbers-v1";
+  const STORE_KEY = "event-numbers-v2";
   const state = {
     tab: "banner", title: DEFAULT_TITLE,
     slots: Array(SLOT_COUNT).fill(""), copies: 1, order: "banner",
@@ -450,73 +452,139 @@
   $("undo").addEventListener("click", () => { state.queue.pop(); update(); });
   $("clear").addEventListener("click", () => { state.queue = []; update(); });
 
-  // ---------- Glyph measurement (scan real pixels for the exact ink box) ----------
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  let metrics = {};
-  function measureAll() {
-    const S = 600, W = S * 2, H = S * 2, ox = S / 2, oy = S * 1.5;
-    canvas.width = W; canvas.height = H;
-    metrics = {};
+  // ---------- Glyph outlines (opentype.js). Preview, print and PDF all draw the same paths. ----------
+  const fonts = {};   // weight -> opentype.Font
+  let glyphs = {};    // digit -> { cmds, x0, x1, y0, y1 } at font size 1, y pointing down
+  async function loadFonts() {
+    await Promise.all(["600", "700", "800"].map(async (w) => {
+      const res = await fetch(`fonts/poppins-latin-${w}-normal.woff`);
+      fonts[w] = opentype.parse(await res.arrayBuffer());
+    }));
+  }
+  function buildGlyphs() {
+    const f = fonts[state.weight];
+    glyphs = {};
     DIGITS.forEach((d) => {
-      ctx.clearRect(0, 0, W, H);
-      ctx.font = `${state.weight} ${S}px Poppins`;
-      ctx.fillStyle = "#000"; ctx.textBaseline = "alphabetic";
-      ctx.fillText(d, ox, oy);
-      const px = ctx.getImageData(0, 0, W, H).data;
-      let x0 = W, x1 = -1, y0 = H, y1 = -1;
-      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-        if (px[(y * W + x) * 4 + 3] > 127) {
-          if (x < x0) x0 = x; if (x > x1) x1 = x;
-          if (y < y0) y0 = y; if (y > y1) y1 = y;
-        }
-      }
-      metrics[d] = { left: (ox - x0) / S, right: (x1 + 1 - ox) / S, ascent: (oy - y0) / S, descent: (y1 + 1 - oy) / S };
+      const p = f.getPath(d, 0, 0, 1);
+      const bb = p.getBoundingBox();
+      glyphs[d] = { cmds: p.commands, x0: bb.x1, x1: bb.x2, y0: bb.y1, y1: bb.y2 };
     });
   }
-
-  // Each digit fit to the same ink height, condensed by Width, never wider than the trim.
-  function digitTransform(d) {
-    const m = metrics[d];
-    const inkH = m.ascent + m.descent, inkW = m.left + m.right;
+  // Fit the ink to the number height, condense by Width, never wider than the trim, center in the trim.
+  function placement(d) {
+    const g = glyphs[d];
+    const inkW = g.x1 - g.x0, inkH = g.y1 - g.y0;
     const sy = state.height / inkH;
     let sx = sy * (state.width / 100);
     const maxW = TRIM_W - SIDE_PAD * 2;
     if (inkW * sx > maxW) sx = maxW / inkW;
-    const x = TX + (TRIM_W - inkW * sx) / 2 + m.left * sx;
-    const y = TY + (TRIM_H - state.height) / 2 + m.ascent * sy;
-    return { x, y, sx: sx / FS, sy: sy / FS };
+    const left = TX + (TRIM_W - inkW * sx) / 2;
+    const top = TY + (TRIM_H - state.height) / 2;
+    return { sx, sy, tx: left - g.x0 * sx, ty: top - g.y0 * sy };
   }
-  function cropMarks() {
-    if (!state.crops) return "";
+  // SVG path for a digit placed on the page. unit = output units per inch (1 for SVG inches, 72 for PDF points).
+  function pathData(d, unit) {
+    const g = glyphs[d], t = placement(d);
+    const X = (x) => +((x * t.sx + t.tx) * unit).toFixed(4);
+    const Y = (y) => +((y * t.sy + t.ty) * unit).toFixed(4);
+    return g.cmds.map((c) => {
+      switch (c.type) {
+        case "M": return `M${X(c.x)} ${Y(c.y)}`;
+        case "L": return `L${X(c.x)} ${Y(c.y)}`;
+        case "Q": return `Q${X(c.x1)} ${Y(c.y1)} ${X(c.x)} ${Y(c.y)}`;
+        case "C": return `C${X(c.x1)} ${Y(c.y1)} ${X(c.x2)} ${Y(c.y2)} ${X(c.x)} ${Y(c.y)}`;
+        default: return "Z";
+      }
+    }).join("");
+  }
+  function cropLines() {
     const L = TX, R = TX + TRIM_W, T = TY, B = TY + TRIM_H, g = MARK_GAP, n = MARK_LEN;
-    const lines = [
+    return [
       [L, T - g, L, T - g - n], [L - g, T, L - g - n, T],
       [R, T - g, R, T - g - n], [R + g, T, R + g + n, T],
       [L, B + g, L, B + g + n], [L - g, B, L - g - n, B],
       [R, B + g, R, B + g + n], [R + g, B, R + g + n, B],
     ];
+  }
+  const trimGray = () => Math.round(255 - (state.trim / 100) * 127);
+
+  function cropMarks() {
+    if (!state.crops) return "";
     return `<g stroke="#000" stroke-width="${MARK_STROKE}" fill="none">` +
-      lines.map(([x1, y1, x2, y2]) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`).join("") + `</g>`;
+      cropLines().map(([x1, y1, x2, y2]) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`).join("") + `</g>`;
   }
   function trimLine() {
     if (!state.trim) return "";
-    const v = Math.round(255 - (state.trim / 100) * 127);
+    const v = trimGray();
     return `<rect x="${TX}" y="${TY}" width="${TRIM_W}" height="${TRIM_H}" fill="none" stroke="rgb(${v},${v},${v})" stroke-width="${TRIM_STROKE}"/>`;
   }
   function pageSVG(d) {
-    const t = digitTransform(d);
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_W} ${PAGE_H}" preserveAspectRatio="xMidYMid meet">` +
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="8.5in" height="11in" viewBox="0 0 ${PAGE_W} ${PAGE_H}" preserveAspectRatio="xMidYMid meet">` +
       `<rect width="${PAGE_W}" height="${PAGE_H}" fill="#fff"/>` + trimLine() + cropMarks() +
-      `<text transform="translate(${t.x} ${t.y}) scale(${t.sx} ${t.sy})" font-family="Poppins" font-weight="${state.weight}" font-size="${FS}" fill="${INK}">${d}</text>` +
+      `<path d="${pathData(d, 1)}" fill="${INK}"/>` +
       `</svg>`;
+  }
+
+  // ---------- PDF (exact 8.5x11 vector pages) ----------
+  function fileName() {
+    const name = (state.tab === "banner" ? state.title : "numbers").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "numbers";
+    return `${name}.pdf`;
+  }
+  async function downloadPDF() {
+    const list = currentList();
+    if (!list.length) return;
+    const { PDFDocument, rgb } = PDFLib;
+    const doc = await PDFDocument.create();
+    doc.setTitle(state.tab === "banner" ? state.title : "Numbers");
+    const PT = 72, H = PAGE_H * PT;
+    const ink = rgb(0x23 / 255, 0x1f / 255, 0x20 / 255);
+    list.forEach((d) => {
+      const page = doc.addPage([PAGE_W * PT, H]);
+      if (state.trim) {
+        const v = trimGray() / 255;
+        page.drawRectangle({ x: TX * PT, y: (PAGE_H - TY - TRIM_H) * PT, width: TRIM_W * PT, height: TRIM_H * PT,
+          borderColor: rgb(v, v, v), borderWidth: 0.5 });
+      }
+      if (state.crops) {
+        cropLines().forEach(([x1, y1, x2, y2]) => page.drawLine({
+          start: { x: x1 * PT, y: (PAGE_H - y1) * PT }, end: { x: x2 * PT, y: (PAGE_H - y2) * PT },
+          thickness: 0.25, color: rgb(0, 0, 0) }));
+      }
+      page.drawSvgPath(pathData(d, PT), { x: 0, y: H, color: ink });
+    });
+    const bytes = await doc.save();
+    const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = fileName();
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  // ---------- Print: a separate document holding only the pages, so nothing else can rescale them ----------
+  let printFrame = null;
+  function printPages() {
+    const list = currentList();
+    if (!list.length) return;
+    if (printFrame) printFrame.remove();
+    printFrame = document.createElement("iframe");
+    printFrame.setAttribute("aria-hidden", "true");
+    printFrame.style.cssText = "position:fixed;left:-10000px;top:0;width:8.5in;height:11in;border:0;";
+    document.body.appendChild(printFrame);
+    const html = `<!DOCTYPE html><html><head><title>${state.tab === "banner" ? state.title : "Numbers"}</title><style>` +
+      `@page{size:8.5in 11in;margin:0}html,body{margin:0;padding:0;background:#fff}` +
+      `.page{width:8.5in;height:11in;overflow:hidden;break-after:page;page-break-after:always}` +
+      `.page:last-child{break-after:auto;page-break-after:auto}svg{display:block;width:8.5in;height:11in}` +
+      `</style></head><body>${list.map((d) => `<div class="page">${pageSVG(d)}</div>`).join("")}</body></html>`;
+    const doc = printFrame.contentDocument;
+    doc.open(); doc.write(html); doc.close();
+    setTimeout(() => { printFrame.contentWindow.focus(); printFrame.contentWindow.print(); }, 200);
   }
 
   // ---------- Preview + print ----------
   const pagesEl = $("pages"), printRoot = $("print-root");
   function currentList() { return state.tab === "banner" ? bannerDigits() : state.queue; }
   function renderPages() {
-    if (!Object.keys(metrics).length) return;
+    if (!Object.keys(glyphs).length) return;
     const list = currentList();
     pagesEl.innerHTML = list.map((d, i) => `<div class="page">${pageSVG(d)}<i>${i + 1}</i></div>`).join("") ||
       `<div class="placeholder">${state.tab === "banner" ? "Fill in the banner above and your pages show up here." : "Your pages will show up here."}</div>`;
@@ -524,7 +592,8 @@
     const n = list.length;
     $("pageCount").textContent = `${n} page${n === 1 ? "" : "s"}`;
     $("print").disabled = n === 0;
-    $("print").textContent = n ? `Print ${n} page${n === 1 ? "" : "s"}` : "Print";
+    $("pdf").disabled = n === 0;
+    $("pdf").textContent = n ? `Download PDF (${n} page${n === 1 ? "" : "s"})` : "Download PDF";
   }
   function update() { renderSlots(); renderTally(); renderQueue(); renderPages(); save(); }
 
@@ -536,17 +605,18 @@
     $("widthOut").textContent = `${state.width}%`;
     $("trimOut").textContent = state.trim ? `${state.trim}%` : "Off";
   };
-  weightEl.addEventListener("change", () => { state.weight = weightEl.value; measureAll(); update(); });
+  weightEl.addEventListener("change", () => { state.weight = weightEl.value; buildGlyphs(); update(); });
   heightEl.addEventListener("input", () => { state.height = parseFloat(heightEl.value); showOutputs(); update(); });
   widthEl.addEventListener("input", () => { state.width = parseInt(widthEl.value, 10); showOutputs(); update(); });
   trimEl.addEventListener("input", () => { state.trim = parseInt(trimEl.value, 10); showOutputs(); update(); });
   cropsEl.addEventListener("change", () => { state.crops = cropsEl.checked; update(); });
-  $("print").addEventListener("click", async () => { await document.fonts.ready; window.print(); });
+  $("print").addEventListener("click", printPages);
+  $("pdf").addEventListener("click", () => downloadPDF().catch((e) => alert("Could not make the PDF: " + e.message)));
 
   showOutputs(); showTab(); renderSlots(); renderTally(); renderQueue();
-  Promise.all(["600", "700", "800"].map((w) => document.fonts.load(`${w} 100px Poppins`, "0123456789")))
-    .catch(() => {})
-    .then(() => { measureAll(); update(); });
+  loadFonts()
+    .then(() => { buildGlyphs(); update(); })
+    .catch(() => { pagesEl.innerHTML = `<div class="placeholder">Couldn't load the number font. Refresh the page to try again.</div>`; });
 })();
 </script>
 </body>
