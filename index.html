@@ -167,7 +167,8 @@
     <div class="mock-top">
       <h2>Banner mockup</h2>
       <div class="mock-actions">
-        <button class="btn dark" id="mockPdf" type="button" title="Landscape, 11 x 8.5">Download banner mockup PDF</button>
+        <button class="btn" id="mockPdf" type="button">Download mockup PDF</button>
+        <button class="btn dark" id="mockPrint" type="button" title="Landscape, 11 x 8.5">Print banner mockup</button>
       </div>
     </div>
     <div class="text-fields">
@@ -196,8 +197,8 @@
           <li><b data-panel="banner">Fill in the banner</b><b data-panel="pick" hidden>Pick your numbers</b>
             <span data-panel="banner">Click a box, then type or tap a number. Check "Numbers you need."</span>
             <span data-panel="pick" hidden>Tap 0-9 or type a set. Each number is one page.</span></li>
-          <li><b>Download the PDF</b><span>Use the green Download PDF button below. For the sign itself, use "Download banner mockup PDF."</span></li>
-          <li><b>Open the PDF</b><span>Open it from your Downloads folder (don't print from the website).</span></li>
+          <li><b>Click Print</b><span>The green Print button below opens the PDF preview in a new tab. For the sign itself, use "Print banner mockup."</span></li>
+          <li><b>Click print in the preview</b><span>Use the print icon in the PDF preview tab. If no tab opens, allow pop-ups, or use Download PDF and open the file.</span></li>
           <li><b>Print at Actual size</b><span>Letter paper, Scale <b>Actual size</b> or <b>100%</b>. Not "Fit."</span></li>
           <li><b>Cut on the crop marks</b><span>Each number trims to 6 x 9 in. The faint gray line shows the edge.</span></li>
         </ol>
@@ -290,8 +291,9 @@
       </details>
 
       <div class="card">
-        <button class="btn primary" id="pdf" disabled>Download PDF</button>
-        <p class="hint">Then open the PDF and print at <b>Actual size</b> / 100%.</p>
+        <button class="btn primary" id="print" disabled>Print</button>
+        <div class="row"><button class="btn grow" id="pdf" disabled>Download PDF</button></div>
+        <p class="hint">Print opens the PDF preview in a new tab. Print from there at <b>Actual size</b> / 100%.</p>
       </div>
     </div>
 
@@ -781,7 +783,8 @@
     const n = list.length;
     $("pageCount").textContent = `${n} page${n === 1 ? "" : "s"}`;
     $("pdf").disabled = n === 0;
-    $("pdf").textContent = n ? `Download PDF (${n} page${n === 1 ? "" : "s"})` : "Download PDF";
+    $("print").disabled = n === 0;
+    $("print").textContent = n ? `Print ${n} page${n === 1 ? "" : "s"}` : "Print";
   }
   function update() { renderSlots(); renderTally(); renderQueue(); renderPages(); save(); }
 
@@ -798,6 +801,8 @@
   widthEl.addEventListener("input", () => { state.width = parseInt(widthEl.value, 10); showOutputs(); update(); });
   trimEl.addEventListener("input", () => { state.trim = parseInt(trimEl.value, 10); showOutputs(); update(); });
   cropsEl.addEventListener("change", () => { state.crops = cropsEl.checked; update(); });
+  $("print").addEventListener("click", () => { if (currentList().length) openPDF(pagesPDF, fileName()); });
+  $("mockPrint").addEventListener("click", () => openPDF(mockPDFBytes, fileName().replace(/\.pdf$/, "-mockup.pdf")));
   $("mockPdf").addEventListener("click", () => mockPDFBytes().then((b) => saveBlob(b, fileName().replace(/\.pdf$/, "-mockup.pdf"))).catch((e) => alert("Could not make the PDF: " + e.message)));
   $("pdf").addEventListener("click", () => { if (currentList().length) pagesPDF().then((b) => saveBlob(b, fileName())).catch((e) => alert("Could not make the PDF: " + e.message)); });
 
