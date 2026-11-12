@@ -188,8 +188,8 @@
     </div>
     <div class="text-fields">
       <div class="field">
-        <label for="titleInput">Title</label>
-        <input type="text" id="titleInput" maxlength="80" autocomplete="off">
+        <label for="titleInput">Event name</label>
+        <input type="text" id="titleInput" maxlength="80" autocomplete="off" placeholder="e.g. Tree Lighting &amp; Holiday Market">
       </div>
       <div class="field">
         <label for="noteInput">Note under the numbers</label>
@@ -331,7 +331,7 @@
   const INK = "#231f20", SIDE_PAD = 0.04, FS = 100;
   const DIGITS = ["1","2","3","4","5","6","7","8","9","0"];
   const DIGITS_SORTED = ["0","1","2","3","4","5","6","7","8","9"];
-  const DEFAULT_TITLE = "Event Numbers";
+  const DEFAULT_TITLE = "Event Name";
   const DEFAULT_NOTE = "*Please display numbers as shown above";
 
   // Banner layout: XX / XX FROM XX : XX TO XX : XX
@@ -352,6 +352,7 @@
     queue: [], weight: "700", height: 8.5, width: 90, trim: 20, crops: true,
   };
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE_KEY) || "{}")); } catch (e) {}
+  if (state.title === "Event Numbers") state.title = DEFAULT_TITLE;
   if (typeof state.note !== "string") state.note = DEFAULT_NOTE;
   if (!Array.isArray(state.slots) || state.slots.length !== SLOT_COUNT) state.slots = Array(SLOT_COUNT).fill("");
   const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} };
