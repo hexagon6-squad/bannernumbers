@@ -83,6 +83,14 @@
   .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; width: 100%; padding: 13px; font-size: 16px; }
   .btn.primary:hover { filter: brightness(1.08); }
   .btn.primary:disabled { opacity: .4; cursor: default; }
+  .steps { list-style: none; counter-reset: step; margin: 0; padding: 0; }
+  .steps li { counter-increment: step; position: relative; padding: 0 0 12px 36px; font-size: 14px; line-height: 1.45; }
+  .steps li:last-child { padding-bottom: 0; }
+  .steps li::before { content: counter(step); position: absolute; left: 0; top: -1px; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 13px; display: grid; place-items: center; }
+  .steps li:not(:last-child)::after { content: ""; position: absolute; left: 11.5px; top: 26px; bottom: 2px; width: 1px; background: var(--line); }
+  .steps b { font-weight: 600; }
+  .steps span { display: block; font-size: 12px; color: var(--muted); }
   .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; line-height: 1.5; }
   kbd { font: 600 11px "Poppins", sans-serif; background: #f1efec; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
 
@@ -182,6 +190,19 @@
 
   <div class="grid">
     <div class="stack">
+      <div class="card">
+        <h2>How to print</h2>
+        <ol class="steps">
+          <li><b data-panel="banner">Fill in the banner</b><b data-panel="pick" hidden>Pick your numbers</b>
+            <span data-panel="banner">Click a box, then type or tap a number. Check "Numbers you need."</span>
+            <span data-panel="pick" hidden>Tap 0-9 or type a set. Each number is one page.</span></li>
+          <li><b>Download the PDF</b><span>Use the green Download PDF button below. For the sign itself, use "Download banner mockup PDF."</span></li>
+          <li><b>Open the PDF</b><span>Open it from your Downloads folder (don't print from the website).</span></li>
+          <li><b>Print at Actual size</b><span>Letter paper, Scale <b>Actual size</b> or <b>100%</b>. Not "Fit."</span></li>
+          <li><b>Cut on the crop marks</b><span>Each number trims to 6 x 9 in. The faint gray line shows the edge.</span></li>
+        </ol>
+      </div>
+
       <div class="card" data-panel="banner">
         <h2>Fill the box</h2>
         <div class="pad short" id="bannerPad"></div>
@@ -270,7 +291,7 @@
 
       <div class="card">
         <button class="btn primary" id="pdf" disabled>Download PDF</button>
-        <p class="hint">Open the downloaded PDF and print it at <b>Actual size</b> / 100%.</p>
+        <p class="hint">Then open the PDF and print at <b>Actual size</b> / 100%.</p>
       </div>
     </div>
 
