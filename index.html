@@ -159,8 +159,7 @@
     <div class="mock-top">
       <h2>Banner mockup</h2>
       <div class="mock-actions">
-        <button class="btn" id="mockPdf" type="button">Download mockup PDF</button>
-        <button class="btn dark" id="mockPrint" type="button" title="Landscape, 11 x 8.5">Print banner mockup</button>
+        <button class="btn dark" id="mockPdf" type="button" title="Landscape, 11 x 8.5">Download banner mockup PDF</button>
       </div>
     </div>
     <div class="text-fields">
@@ -178,7 +177,7 @@
       <div class="sign-row" id="signRow"></div>
       <div class="sign-note" id="signNote" contenteditable="true" spellcheck="false"></div>
     </div>
-    <p class="hint" style="text-align:center">Click a box, then type or tap a number. "Print banner mockup" prints this sign on one landscape 8.5 x 11 page with your numbers filled in.</p>
+    <p class="hint" style="text-align:center">Click a box, then type or tap a number. The mockup PDF is one landscape 8.5 x 11 page with your numbers filled in.</p>
   </section>
 
   <div class="grid">
@@ -271,8 +270,7 @@
 
       <div class="card">
         <button class="btn primary" id="pdf" disabled>Download PDF</button>
-        <div class="row"><button class="btn grow" id="print" disabled>Print (opens PDF)</button></div>
-        <p class="hint"><b>Print</b> opens the PDF in a new tab. Print it from there at <b>Actual size</b> / 100%.</p>
+        <p class="hint">Open the downloaded PDF and print it at <b>Actual size</b> / 100%.</p>
       </div>
     </div>
 
@@ -761,7 +759,6 @@
     printRoot.innerHTML = list.map((d) => `<div class="page">${pageSVG(d)}</div>`).join("");
     const n = list.length;
     $("pageCount").textContent = `${n} page${n === 1 ? "" : "s"}`;
-    $("print").disabled = n === 0;
     $("pdf").disabled = n === 0;
     $("pdf").textContent = n ? `Download PDF (${n} page${n === 1 ? "" : "s"})` : "Download PDF";
   }
@@ -780,8 +777,6 @@
   widthEl.addEventListener("input", () => { state.width = parseInt(widthEl.value, 10); showOutputs(); update(); });
   trimEl.addEventListener("input", () => { state.trim = parseInt(trimEl.value, 10); showOutputs(); update(); });
   cropsEl.addEventListener("change", () => { state.crops = cropsEl.checked; update(); });
-  $("print").addEventListener("click", () => { if (currentList().length) openPDF(pagesPDF, fileName()); });
-  $("mockPrint").addEventListener("click", () => openPDF(mockPDFBytes, fileName().replace(/\.pdf$/, "-mockup.pdf")));
   $("mockPdf").addEventListener("click", () => mockPDFBytes().then((b) => saveBlob(b, fileName().replace(/\.pdf$/, "-mockup.pdf"))).catch((e) => alert("Could not make the PDF: " + e.message)));
   $("pdf").addEventListener("click", () => { if (currentList().length) pagesPDF().then((b) => saveBlob(b, fileName())).catch((e) => alert("Could not make the PDF: " + e.message)); });
 
