@@ -30,10 +30,12 @@
 
   /* ---------- Banner mockup ---------- */
   .mock-card { margin-bottom: 20px; padding: 24px; }
-  .mock-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+  .mock-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
   .mock-top h2 { margin: 0; }
   .mock-top span { font-size: 13px; color: var(--muted); }
-  .mock-actions { display: flex; gap: 8px; }
+  .mock-actions { display: grid; grid-template-columns: auto auto; gap: 8px; }
+  .mock-actions .btn:disabled { opacity: .45; cursor: default; }
+  @media (max-width: 700px) { .mock-actions { width: 100%; grid-template-columns: 1fr 1fr; } }
   .mock-actions .btn { padding: 7px 12px; font-size: 13px; }
   .mock-actions .btn.dark { background: var(--accent); border-color: var(--accent); color: #fff; }
   .text-fields { display: grid; grid-template-columns: 2fr 1.4fr; gap: 12px; margin: 0 auto 16px; max-width: 1100px; }
@@ -184,6 +186,8 @@
       <div class="mock-actions">
         <button class="btn" id="mockPdf" type="button">Download mockup PDF</button>
         <button class="btn dark" id="mockPrint" type="button" title="Landscape, 11 x 8.5">Print banner mockup</button>
+        <button class="btn" id="numPdfTop" type="button" disabled>Download numbers PDF</button>
+        <button class="btn dark" id="numPrintTop" type="button" disabled>Print numbers</button>
       </div>
     </div>
     <div class="text-fields">
@@ -809,6 +813,8 @@
     $("pageCount").textContent = `${n} page${n === 1 ? "" : "s"}`;
     $("pdf").disabled = n === 0;
     $("print").disabled = n === 0;
+    $("numPdfTop").disabled = $("numPrintTop").disabled = n === 0;
+    $("numPrintTop").textContent = n ? `Print numbers (${n})` : "Print numbers";
     $("print").textContent = n ? `Print ${n} page${n === 1 ? "" : "s"}` : "Print";
   }
   function update() { renderSlots(); renderTally(); renderQueue(); renderPages(); save(); }
@@ -826,7 +832,11 @@
   widthEl.addEventListener("input", () => { state.width = parseInt(widthEl.value, 10); showOutputs(); update(); });
   trimEl.addEventListener("input", () => { state.trim = parseInt(trimEl.value, 10); showOutputs(); update(); });
   cropsEl.addEventListener("change", () => { state.crops = cropsEl.checked; update(); });
-  $("print").addEventListener("click", () => { if (currentList().length) openPDF(pagesPDF, fileName()); });
+  const printNumbers = () => { if (currentList().length) openPDF(pagesPDF, fileName()); };
+  const downloadNumbers = () => { if (currentList().length) pagesPDF().then((b) => saveBlob(b, fileName())).catch((e) => alert("Could not make the PDF: " + e.message)); };
+  $("print").addEventListener("click", printNumbers);
+  $("numPrintTop").addEventListener("click", printNumbers);
+  $("numPdfTop").addEventListener("click", downloadNumbers);
   $("mockPrint").addEventListener("click", () => openPDF(mockPDFBytes, fileName().replace(/\.pdf$/, "-mockup.pdf")));
   $("mockPdf").addEventListener("click", () => mockPDFBytes().then((b) => saveBlob(b, fileName().replace(/\.pdf$/, "-mockup.pdf"))).catch((e) => alert("Could not make the PDF: " + e.message)));
   $("pdf").addEventListener("click", () => { if (currentList().length) pagesPDF().then((b) => saveBlob(b, fileName())).catch((e) => alert("Could not make the PDF: " + e.message)); });
