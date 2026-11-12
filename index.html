@@ -45,6 +45,8 @@
   .field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
   .field input { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; font: 500 15px "Poppins", sans-serif; color: var(--ink); }
   .field select { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; font: 500 15px "Poppins", sans-serif; color: var(--ink); background: #fff; }
+  .clear-field .btn { width: 100%; padding: 10px; }
+  .clear-field .btn:hover { border-color: #e2b4b0; color: #b3261e; background: #fdf6f5; }
   .field input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
   .sign { container-type: inline-size; background: #fff; border: 1px solid #ebe9e5; border-radius: 6px;
     box-shadow: 0 10px 30px -12px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.05); padding: 4.5cqw 3cqw 4cqw; text-align: center;
@@ -257,6 +259,10 @@
         <label for="noteInput">Note under the numbers</label>
         <input type="text" id="noteInput" maxlength="90" autocomplete="off" placeholder="Leave empty for no note">
       </div>
+      <div class="field clear-field">
+        <label>&nbsp;</label>
+        <button class="btn" id="clearAll" type="button">Clear all</button>
+      </div>
     </div>
     <div class="sign">
       <div class="sign-head">
@@ -275,7 +281,7 @@
       <div class="pad-row" id="bannerPad"></div>
       <div class="fillbar-actions">
         <button class="btn" id="slotBlank" type="button">Leave blank</button>
-        <button class="btn" id="bannerClear" type="button">Clear banner</button>
+        <button class="btn" id="bannerClear" type="button">Clear numbers</button>
       </div>
     </div>
     <p class="hint" style="text-align:center">Click a box, then tap a number or type <kbd>0</kbd>-<kbd>9</kbd>. <kbd>Space</kbd> leaves it blank, <kbd>⌫</kbd> goes back, <kbd>←</kbd><kbd>→</kbd> move.</p>
@@ -287,7 +293,7 @@
         <summary>How to print</summary>
         <ol class="steps" style="margin-top:12px">
           <li><b data-panel="banner">Fill in the banner</b><b data-panel="pick" hidden>Pick your numbers</b>
-            <span data-panel="banner">Click a box on the banner, then tap a number in the Fill the box row. Open "Numbers you need" to see the count.</span>
+            <span data-panel="banner">Click a box on the banner, then tap a number in the Fill the box row ("Clear numbers" empties the boxes, "Clear all" resets everything). Open "Numbers you need" to see the count.</span>
             <span data-panel="pick" hidden>Tap 0-9 or type a set. Each number is one page.</span></li>
           <li><b>Click Print</b><span>The green Print button at the bottom of this panel opens the PDF preview in a new tab. For the sign itself, use "Print banner mockup."</span></li>
           <li><b>Click print in the preview</b><span>Use the print icon in the PDF preview tab. If no tab opens, allow pop-ups, or use Download PDF and open the file.</span></li>
@@ -501,6 +507,17 @@
     renderIcons(); update();
   });
   graphicSel.addEventListener("change", () => { state.graphic = graphicSel.value; renderIcons(); save(); });
+  // Clear all: back to Custom, default name, no line above, no graphics, standard layout, default note, no numbers.
+  $("clearAll").addEventListener("click", () => {
+    state.preset = "custom"; eventSel.value = "custom";
+    state.graphic = "none"; graphicSel.value = "none";
+    state.title = DEFAULT_TITLE; titleEl.textContent = titleInput.value = DEFAULT_TITLE;
+    state.kicker = ""; kickerEl.textContent = kickerInput.value = "";
+    state.note = DEFAULT_NOTE; noteEl.textContent = noteInput.value = DEFAULT_NOTE;
+    setLayout("standard");
+    state.slots = Array(SLOT_COUNT).fill(""); state.slotStore = {}; active = 0;
+    renderIcons(); update();
+  });
   // Typing your own name switches the Event menu to Custom (graphics stay as chosen).
   const toCustom = () => {
     const ev = EVENTS[state.preset];
