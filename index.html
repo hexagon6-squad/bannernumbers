@@ -271,8 +271,8 @@
 
       <div class="card">
         <button class="btn primary" id="pdf" disabled>Download PDF</button>
-        <div class="row"><button class="btn grow" id="print" disabled>Print</button></div>
-        <p class="hint"><b>Download PDF</b> is the surest way to get full size: open the PDF and print at <b>Actual size</b> / 100%. If you print straight from here, set Margins to None and Scale to 100%.</p>
+        <div class="row"><button class="btn grow" id="print" disabled>Print (opens PDF)</button></div>
+        <p class="hint"><b>Print</b> opens the PDF in a new tab. Print it from there at <b>Actual size</b> / 100%.</p>
       </div>
     </div>
 
@@ -563,9 +563,8 @@
     const name = (state.tab === "banner" ? state.title : "numbers").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "numbers";
     return `${name}.pdf`;
   }
-  async function downloadPDF() {
+  async function pagesPDF() {
     const list = currentList();
-    if (!list.length) return;
     const { PDFDocument, rgb } = PDFLib;
     const doc = await PDFDocument.create();
     doc.setTitle(state.tab === "banner" ? state.title : "Numbers");
@@ -585,7 +584,7 @@
       }
       page.drawSvgPath(pathData(d, PT), { x: 0, y: H, color: ink });
     });
-    saveBlob(await doc.save(), fileName());
+    return doc.save();
   }
 
   // ---------- Print: a separate document holding only the pages, so nothing else can rescale them ----------
@@ -721,7 +720,7 @@
     return `<svg xmlns="http://www.w3.org/2000/svg" width="11in" height="8.5in" viewBox="0 0 ${MOCK_W} ${MOCK_H}"><rect width="${MOCK_W}" height="${MOCK_H}" fill="#fff"/>${body}</svg>`;
   }
   const hexRGB = (h) => { const n = parseInt(h.slice(1), 16); return PDFLib.rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255); };
-  async function mockPDF() {
+  async function mockPDFBytes() {
     const { PDFDocument } = PDFLib;
     const doc = await PDFDocument.create();
     doc.setTitle(`${state.title} mockup`);
@@ -731,7 +730,17 @@
       if (sh.kind === "rect") page.drawRectangle({ x: sh.x * PT, y: (MOCK_H - sh.y - sh.h) * PT, width: sh.w * PT, height: sh.h * PT, borderColor: hexRGB(sh.stroke), borderWidth: sh.sw * PT });
       else page.drawSvgPath(cmdsToD(sh.cmds, PT), { x: 0, y: H, color: hexRGB(sh.fill) });
     });
-    saveBlob(await doc.save(), fileName().replace(/\.pdf$/, "-mockup.pdf"));
+    return doc.save();
+  }
+  // Print = open the exact PDF in a new tab (Chrome's PDF viewer prints it at true size).
+  function openPDF(makeBytes, nameForFallback) {
+    const tab = window.open("", "_blank");
+    if (tab) tab.document.write('<p style="font:16px sans-serif;padding:24px">Making your PDF…</p>');
+    makeBytes().then((bytes) => {
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      if (tab) tab.location.href = url; else saveBlob(bytes, nameForFallback);
+      setTimeout(() => URL.revokeObjectURL(url), 120000);
+    }).catch((e) => { if (tab) tab.close(); alert("Could not make the PDF: " + e.message); });
   }
   function saveBlob(bytes, name) {
     const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
@@ -771,10 +780,10 @@
   widthEl.addEventListener("input", () => { state.width = parseInt(widthEl.value, 10); showOutputs(); update(); });
   trimEl.addEventListener("input", () => { state.trim = parseInt(trimEl.value, 10); showOutputs(); update(); });
   cropsEl.addEventListener("change", () => { state.crops = cropsEl.checked; update(); });
-  $("print").addEventListener("click", printPages);
-  $("mockPrint").addEventListener("click", () => printDoc([mockSVG()], "11in", "8.5in", `${state.title} mockup`));
-  $("mockPdf").addEventListener("click", () => mockPDF().catch((e) => alert("Could not make the PDF: " + e.message)));
-  $("pdf").addEventListener("click", () => downloadPDF().catch((e) => alert("Could not make the PDF: " + e.message)));
+  $("print").addEventListener("click", () => { if (currentList().length) openPDF(pagesPDF, fileName()); });
+  $("mockPrint").addEventListener("click", () => openPDF(mockPDFBytes, fileName().replace(/\.pdf$/, "-mockup.pdf")));
+  $("mockPdf").addEventListener("click", () => mockPDFBytes().then((b) => saveBlob(b, fileName().replace(/\.pdf$/, "-mockup.pdf"))).catch((e) => alert("Could not make the PDF: " + e.message)));
+  $("pdf").addEventListener("click", () => { if (currentList().length) pagesPDF().then((b) => saveBlob(b, fileName())).catch((e) => alert("Could not make the PDF: " + e.message)); });
 
   showOutputs(); showTab(); renderSlots(); renderTally(); renderQueue();
   loadFonts()
