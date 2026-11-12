@@ -261,7 +261,7 @@
       </div>
       <div class="field clear-field">
         <label>&nbsp;</label>
-        <button class="btn" id="clearAll" type="button">Clear all</button>
+        <button class="btn" id="clearAll" type="button">Clear banner</button>
       </div>
     </div>
     <div class="sign">
@@ -293,7 +293,7 @@
         <summary>How to print</summary>
         <ol class="steps" style="margin-top:12px">
           <li><b data-panel="banner">Fill in the banner</b><b data-panel="pick" hidden>Pick your numbers</b>
-            <span data-panel="banner">Click a box on the banner, then tap a number in the Fill the box row ("Clear numbers" empties the boxes, "Clear all" resets everything). Open "Numbers you need" to see the count.</span>
+            <span data-panel="banner">Click a box on the banner, then tap a number in the Fill the box row ("Clear numbers" empties the boxes, "Clear banner" resets everything). Open "Numbers you need" to see the count.</span>
             <span data-panel="pick" hidden>Tap 0-9 or type a set. Each number is one page.</span></li>
           <li><b>Click Print</b><span>The green Print button at the bottom of this panel opens the PDF preview in a new tab. For the sign itself, use "Print banner mockup."</span></li>
           <li><b>Click print in the preview</b><span>Use the print icon in the PDF preview tab. If no tab opens, allow pop-ups, or use Download PDF and open the file.</span></li>
@@ -507,7 +507,7 @@
     renderIcons(); update();
   });
   graphicSel.addEventListener("change", () => { state.graphic = graphicSel.value; renderIcons(); save(); });
-  // Clear all: back to Custom, default name, no line above, no graphics, standard layout, default note, no numbers.
+  // Clear banner: back to Custom, default name, no line above, no graphics, standard layout, default note, no numbers.
   $("clearAll").addEventListener("click", () => {
     state.preset = "custom"; eventSel.value = "custom";
     state.graphic = "none"; graphicSel.value = "none";
