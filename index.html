@@ -261,7 +261,7 @@
 
   <div class="grid">
     <div class="stack">
-      <details class="card" id="howBox" open>
+      <details class="card" id="howBox">
         <summary>How to print</summary>
         <ol class="steps" style="margin-top:12px">
           <li><b data-panel="banner">Fill in the banner</b><b data-panel="pick" hidden>Pick your numbers</b>
@@ -565,7 +565,7 @@
   $("copiesMinus").addEventListener("click", () => { state.copies = Math.max(1, state.copies - 1); update(); });
   $("copiesPlus").addEventListener("click", () => { state.copies = Math.min(20, state.copies + 1); update(); });
   const howBox = $("howBox");
-  if (state.howOpen === false) howBox.open = false;
+  if (state.howOpen === true) howBox.open = true;
   howBox.addEventListener("toggle", () => { state.howOpen = howBox.open; save(); });
   const needBox = $("needBox");
   if (state.needOpen) needBox.open = true;
