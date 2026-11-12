@@ -116,6 +116,14 @@
   .need-sum { flex-basis: 100%; text-transform: none; letter-spacing: 0; font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.4; }
   .need-sum em { font-style: normal; color: var(--accent); }
   .need-sum.empty { font-weight: 500; color: var(--muted); font-size: 14px; }
+  .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; justify-self: start; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .track { width: 40px; height: 22px; border-radius: 11px; background: #d6d3cf; position: relative; transition: background .15s; flex: none; }
+  .switch .knob { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .15s; }
+  .switch input:checked + .track { background: var(--accent); }
+  .switch input:checked + .track .knob { transform: translateX(18px); }
+  .switch input:focus-visible + .track { box-shadow: 0 0 0 3px var(--accent-soft); }
+  .switch input:checked ~ span:last-child { color: var(--accent); }
   .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; line-height: 1.5; }
   kbd { font: 600 11px "Poppins", sans-serif; background: #f1efec; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
 
@@ -339,7 +347,7 @@
         </div>
         <div class="setting">
           <label for="trimOn">Faint grey trim line</label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="trimOn"> <span id="trimOnText">Off</span></label>
+          <label class="switch"><input type="checkbox" id="trimOn" role="switch"><span class="track"><span class="knob"></span></span><span id="trimOnText">Off</span></label>
           <output></output>
         </div>
         <div class="setting" id="trimShadeRow">
