@@ -13,7 +13,7 @@ Tap any 0-9 (each tap = one page), or type a set like `1214 0800`, then print.
 ## Printing
 **Download PDF** makes exact 8.5x11 pages; print the PDF at **Actual size / 100%**. If printing straight from the site, set **Margins: None** and **Scale 100%**.
 
-Print settings (weight, height, width, trim line shade, crop marks) are under "Print settings". Everything is saved in your browser.
+Print settings (weight, height, width, faint gray line on/off + shade, crop marks) are under "Print settings". Everything is saved in your browser.
 
 Poppins is bundled under the SIL Open Font License (`fonts/OFL.txt`).
 Uses opentype.js (MIT) and pdf-lib (MIT), bundled in `lib/`.
