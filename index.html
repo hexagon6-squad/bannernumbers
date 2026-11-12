@@ -34,6 +34,8 @@
   .mock-top h2 { margin: 0; }
   .mock-top span { font-size: 13px; color: var(--muted); }
   .mock-actions { display: grid; grid-template-columns: auto auto; gap: 8px; }
+  .single { display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 0 6px 0 12px; font-size: 13px; font-weight: 600; background: #fff; }
+  .single select { border: 0; background: #f4f3f1; border-radius: 6px; padding: 4px 8px; font: 700 16px "Poppins", sans-serif; color: var(--ink); cursor: pointer; }
   .mock-actions .btn:disabled { opacity: .45; cursor: default; }
   @media (max-width: 700px) { .mock-actions { width: 100%; grid-template-columns: 1fr 1fr; } }
   .mock-actions .btn { padding: 7px 12px; font-size: 13px; }
@@ -188,6 +190,14 @@
         <button class="btn dark" id="mockPrint" type="button" title="Landscape, 11 x 8.5">Print banner mockup</button>
         <button class="btn" id="numPdfTop" type="button" disabled>Download numbers PDF</button>
         <button class="btn dark" id="numPrintTop" type="button" disabled>Print numbers</button>
+        <label class="single">
+          <span>Single number</span>
+          <select id="singleDigit" aria-label="Single number to print">
+            <option>0</option><option selected>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+          </select>
+        </label>
+        <button class="btn dark" id="singlePrint" type="button">Print single</button>
       </div>
     </div>
     <div class="text-fields">
@@ -613,8 +623,8 @@
     const name = (state.tab === "banner" ? state.title : "numbers").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "numbers";
     return `${name}.pdf`;
   }
-  async function pagesPDF() {
-    const list = currentList();
+  async function pagesPDF(only) {
+    const list = only || currentList();
     const { PDFDocument, rgb } = PDFLib;
     const doc = await PDFDocument.create();
     doc.setTitle(state.tab === "banner" ? state.title : "Numbers");
@@ -837,6 +847,10 @@
   $("print").addEventListener("click", printNumbers);
   $("numPrintTop").addEventListener("click", printNumbers);
   $("numPdfTop").addEventListener("click", downloadNumbers);
+  const singleEl = $("singleDigit");
+  if (state.single) singleEl.value = state.single;
+  singleEl.addEventListener("change", () => { state.single = singleEl.value; save(); });
+  $("singlePrint").addEventListener("click", () => openPDF(() => pagesPDF([singleEl.value]), `number-${singleEl.value}.pdf`));
   $("mockPrint").addEventListener("click", () => openPDF(mockPDFBytes, fileName().replace(/\.pdf$/, "-mockup.pdf")));
   $("mockPdf").addEventListener("click", () => mockPDFBytes().then((b) => saveBlob(b, fileName().replace(/\.pdf$/, "-mockup.pdf"))).catch((e) => alert("Could not make the PDF: " + e.message)));
   $("pdf").addEventListener("click", () => { if (currentList().length) pagesPDF().then((b) => saveBlob(b, fileName())).catch((e) => alert("Could not make the PDF: " + e.message)); });
