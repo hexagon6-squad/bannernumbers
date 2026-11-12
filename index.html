@@ -3,41 +3,93 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Number Printing · 6x9 Banner Numbers</title>
+<title>Bethany Village Event Numbers</title>
 <style>
   @font-face { font-family: "Poppins"; font-weight: 600; src: url("fonts/poppins-latin-600-normal.woff2") format("woff2"); }
   @font-face { font-family: "Poppins"; font-weight: 700; src: url("fonts/poppins-latin-700-normal.woff2") format("woff2"); }
   @font-face { font-family: "Poppins"; font-weight: 800; src: url("fonts/poppins-latin-800-normal.woff2") format("woff2"); }
 
-  :root { --ink: #231f20; --bg: #f4f3f1; --card: #fff; --line: #e3e1dd; --muted: #6b6866; --accent: #1f5f4a; }
+  :root { --ink: #231f20; --bg: #f4f3f1; --card: #fff; --line: #e3e1dd; --muted: #6b6866; --accent: #1f5f4a; --accent-soft: #e6f0ec; }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: "Poppins", system-ui, sans-serif; background: var(--bg); color: var(--ink); }
-  header { padding: 20px 24px 8px; }
+  header { padding: 20px 24px 0; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
   header h1 { margin: 0; font-size: 22px; font-weight: 700; }
-  header p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
-  main { display: grid; grid-template-columns: 360px 1fr; gap: 20px; padding: 16px 24px 40px; align-items: start; }
-  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
-  .card + .card { margin-top: 16px; }
-  .card h2 { margin: 0 0 12px; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 
+  .tabs { display: inline-flex; background: #e9e7e3; border-radius: 10px; padding: 4px; gap: 4px; }
+  .tabs button { border: 0; background: none; padding: 8px 16px; border-radius: 7px; font: 600 14px "Poppins", sans-serif; color: var(--muted); cursor: pointer; }
+  .tabs button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+  .wrap { padding: 16px 24px 40px; }
+  .grid { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } .wrap, header { padding-left: 14px; padding-right: 14px; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .stack > .card + .card { margin-top: 16px; }
+  .card h2 { margin: 0 0 12px; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  [hidden] { display: none !important; }
+
+  /* ---------- Banner mockup ---------- */
+  .mock-card { margin-bottom: 20px; padding: 24px; }
+  .mock-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+  .mock-top h2 { margin: 0; }
+  .mock-top span { font-size: 13px; color: var(--muted); }
+  .sign { container-type: inline-size; background: #fff; border: 1px solid #ebe9e5; border-radius: 6px;
+    box-shadow: 0 10px 30px -12px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.05); padding: 4.5cqw 3cqw 4cqw; text-align: center;
+    max-width: 1100px; margin: 0 auto; background-image: linear-gradient(180deg, #fff 0%, #fcfcfb 100%); }
+  .sign-title { margin: 0 auto; font-weight: 800; font-size: 7cqw; line-height: 1.02; letter-spacing: -.01em; text-transform: uppercase; color: var(--ink);
+    outline: none; border-radius: 6px; padding: 0 1cqw; display: inline-block; max-width: 80%; }
+  .sign-title:hover { background: #faf9f7; }
+  .sign-title:focus { background: #f5f4f1; box-shadow: 0 0 0 2px var(--accent-soft); }
+  .sign-row { display: flex; align-items: center; justify-content: center; gap: .8cqw; margin: 3.4cqw 0 2.6cqw; flex-wrap: nowrap; }
+  .slot { width: 5.6cqw; height: 7.6cqw; border: 1px solid #e7cfcf; background: #fff; border-radius: 2px; cursor: pointer;
+    display: grid; place-items: center; font: 700 5.6cqw/1 "Poppins", sans-serif; color: var(--ink); padding: 0; position: relative;
+    transition: border-color .1s, box-shadow .1s, background .1s; }
+  .slot:hover { border-color: #c9b2b2; background: #fdfcfc; }
+  .slot.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft), 0 0 0 1px var(--accent) inset; }
+  .slot.blank::after { content: ""; width: 34%; height: 2px; background: #eadede; position: absolute; bottom: 18%; }
+  .slot.blank.active::after { background: var(--accent); animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .sep { font-weight: 800; font-size: 6.4cqw; line-height: 1; margin: 0 .3cqw; }
+  .word { font-weight: 800; font-size: 4.6cqw; margin: 0 1.6cqw; letter-spacing: -.01em; }
+  .sign-foot { font-weight: 700; font-size: 2.2cqw; letter-spacing: .01em; text-transform: uppercase; }
+  .sign-note { margin-top: 1.6cqw; font-size: 1.7cqw; color: var(--muted); }
+
+  /* ---------- Keypad ---------- */
   .pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
   .pad button { position: relative; aspect-ratio: 2 / 3; border: 1px solid var(--line); border-radius: 8px; background: #fff;
     font: 700 34px "Poppins", sans-serif; color: var(--ink); cursor: pointer; transition: background .1s, transform .05s; }
+  .pad.short button { aspect-ratio: 1 / 1; font-size: 28px; }
   .pad button:hover { background: #f7f6f4; }
   .pad button:active { transform: scale(.96); }
   .pad .count { position: absolute; top: 4px; right: 5px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
     background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; line-height: 18px; display: none; }
   .pad .count.on { display: block; }
 
-  .row { display: flex; gap: 8px; margin-top: 12px; }
+  .row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
   .row input[type=text] { flex: 1; min-width: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; font: 500 15px "Poppins", sans-serif; }
   .btn { padding: 9px 14px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: 600 14px "Poppins", sans-serif; cursor: pointer; color: var(--ink); }
   .btn:hover { background: #f7f6f4; }
+  .btn.grow { flex: 1; }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; width: 100%; padding: 13px; font-size: 16px; }
   .btn.primary:hover { filter: brightness(1.08); }
   .btn.primary:disabled { opacity: .4; cursor: default; }
   .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; line-height: 1.5; }
+  kbd { font: 600 11px "Poppins", sans-serif; background: #f1efec; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+
+  /* ---------- Needed tally ---------- */
+  .tally { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .tally div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 0 6px; text-align: center; background: #fff; }
+  .tally b { display: block; font-size: 26px; line-height: 1.1; }
+  .tally span { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .tally div.zero { opacity: .35; }
+  .tally div.has { border-color: var(--accent); background: var(--accent-soft); }
+  .tally div.has span { color: var(--accent); }
+  .total { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 14px; }
+  .total strong { font-size: 18px; }
+  .stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; vertical-align: middle; }
+  .stepper button { border: 0; background: #fff; width: 32px; height: 32px; font: 600 18px "Poppins", sans-serif; cursor: pointer; color: var(--ink); }
+  .stepper button:hover { background: #f7f6f4; }
+  .stepper output { min-width: 30px; text-align: center; font-weight: 600; }
 
   .queue { display: flex; flex-wrap: wrap; gap: 6px; min-height: 40px; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px 4px 10px; border-radius: 6px; background: #f1efec; font-weight: 700; font-size: 18px; }
@@ -46,16 +98,23 @@
   .empty { color: var(--muted); font-size: 14px; }
 
   .setting { display: grid; grid-template-columns: 110px 1fr auto; align-items: center; gap: 10px; margin: 10px 0; font-size: 14px; }
-  .setting select, .setting input[type=range] { width: 100%; }
+  .setting select, .setting input[type=range] { width: 100%; accent-color: var(--accent); }
   .setting select { padding: 6px; border: 1px solid var(--line); border-radius: 6px; font: 500 14px "Poppins", sans-serif; }
   .setting output { font-size: 13px; color: var(--muted); min-width: 52px; text-align: right; }
+  .setting input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
+  details.card summary { cursor: pointer; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); list-style: none; }
+  details.card summary::-webkit-details-marker { display: none; }
+  details.card summary::after { content: "+"; float: right; font-size: 16px; line-height: 1; }
+  details.card[open] summary::after { content: "−"; }
+  details.card[open] summary { margin-bottom: 4px; }
 
   .preview-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
   .preview-head h2 { margin: 0; }
   .preview-head span { font-size: 14px; color: var(--muted); }
-  #pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
-  #pages .page { width: 100%; aspect-ratio: 8.5 / 11; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.12); border-radius: 2px; }
+  #pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
+  #pages .page { width: 100%; aspect-ratio: 8.5 / 11; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.12); border-radius: 2px; position: relative; }
   #pages .page svg { width: 100%; height: 100%; display: block; }
+  #pages .page i { position: absolute; bottom: 4px; right: 6px; font-style: normal; font-size: 10px; color: #aaa; }
   .placeholder { color: var(--muted); font-size: 14px; padding: 40px 0; text-align: center; grid-column: 1 / -1; }
 
   #print-root { display: none; }
@@ -63,7 +122,7 @@
   @page { size: 8.5in 11in; margin: 0; }
   @media print {
     body { background: #fff; }
-    header, main { display: none !important; }
+    header, .wrap { display: none !important; }
     #print-root { display: block; }
     #print-root .page { width: 8.5in; height: 11in; page-break-after: always; break-after: page; overflow: hidden; }
     #print-root .page:last-child { page-break-after: auto; break-after: auto; }
@@ -73,104 +132,289 @@
 </head>
 <body>
 <header>
-  <h1>Number Printing</h1>
-  <p>6x9 banner numbers, one per letter page, with crop marks and a faint trim line.</p>
+  <div>
+    <h1>Event Numbers</h1>
+    <p>6x9 banner numbers on letter paper, with crop marks and a faint trim line.</p>
+  </div>
+  <div class="tabs" role="tablist">
+    <button type="button" data-tab="banner" class="on">Event banner</button>
+    <button type="button" data-tab="pick">Pick numbers</button>
+  </div>
 </header>
 
-<main>
-  <section>
-    <div class="card">
-      <h2>Pick numbers</h2>
-      <div class="pad" id="pad"></div>
-      <div class="row">
-        <input type="text" id="typed" placeholder="Or type a set, e.g. 1214 0800" inputmode="numeric" autocomplete="off">
-        <button class="btn" id="addTyped">Add</button>
-      </div>
-      <p class="hint">Each tap adds one page. Numbers print in the order you add them.</p>
+<div class="wrap">
+  <section class="card mock-card" data-panel="banner">
+    <div class="mock-top">
+      <h2>Banner mockup</h2>
+      <span>Click a box, then type or tap a number. Click the title to edit it.</span>
     </div>
-
-    <div class="card">
-      <h2>To print</h2>
-      <div class="queue" id="queue"></div>
-      <div class="row">
-        <button class="btn" id="undo">Undo last</button>
-        <button class="btn" id="clear">Clear all</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Settings</h2>
-      <div class="setting">
-        <label for="weight">Weight</label>
-        <select id="weight">
-          <option value="600">Poppins SemiBold</option>
-          <option value="700" selected>Poppins Bold</option>
-          <option value="800">Poppins ExtraBold</option>
-        </select>
-        <output></output>
-      </div>
-      <div class="setting">
-        <label for="height">Number height</label>
-        <input type="range" id="height" min="6" max="8.75" step="0.25" value="8.5">
-        <output id="heightOut">8.5 in</output>
-      </div>
-      <div class="setting">
-        <label for="width">Width</label>
-        <input type="range" id="width" min="70" max="110" step="1" value="90">
-        <output id="widthOut">90%</output>
-      </div>
-      <div class="setting">
-        <label for="trim">Trim line</label>
-        <input type="range" id="trim" min="0" max="100" step="5" value="20">
-        <output id="trimOut">20%</output>
-      </div>
-      <div class="setting">
-        <label for="crops">Crop marks</label>
-        <input type="checkbox" id="crops" checked style="justify-self:start">
-        <output></output>
-      </div>
-      <p class="hint">Defaults match the Tree Lighting banner file: 8.5 in tall, 90% width. Trim line 0% = off. 20% is a very faint gray that just guides the cut.</p>
-    </div>
-
-    <div class="card">
-      <button class="btn primary" id="print" disabled>Print</button>
-      <p class="hint">In the print dialog set <b>Scale: 100%</b> (or "Actual size") and <b>Margins: None</b>. Choose "Save as PDF" to send it to someone else.</p>
+    <div class="sign">
+      <div class="sign-title" id="signTitle" contenteditable="true" spellcheck="false"></div>
+      <div class="sign-row" id="signRow"></div>
+      <div class="sign-foot">Visit www.bethanyvillage.com for more details</div>
+      <div class="sign-note">*Please display numbers as shown above</div>
     </div>
   </section>
 
-  <section class="card">
-    <div class="preview-head">
-      <h2>Preview</h2>
-      <span id="pageCount">0 pages</span>
+  <div class="grid">
+    <div class="stack">
+      <div class="card" data-panel="banner">
+        <h2>Fill the box</h2>
+        <div class="pad short" id="bannerPad"></div>
+        <div class="row">
+          <button class="btn grow" id="slotBlank">Leave blank</button>
+          <button class="btn grow" id="bannerClear">Clear banner</button>
+        </div>
+        <p class="hint">Keyboard: <kbd>0</kbd>-<kbd>9</kbd> fill and jump ahead, <kbd>Space</kbd> blank, <kbd>⌫</kbd> back, <kbd>←</kbd><kbd>→</kbd> move.</p>
+      </div>
+
+      <div class="card" data-panel="banner">
+        <h2>Numbers you need</h2>
+        <div class="tally" id="tally"></div>
+        <div class="total">
+          <span>Banners
+            <span class="stepper" style="margin-left:8px">
+              <button type="button" id="copiesMinus" aria-label="Fewer">−</button>
+              <output id="copiesOut">1</output>
+              <button type="button" id="copiesPlus" aria-label="More">+</button>
+            </span>
+          </span>
+          <span><strong id="bannerTotal">0</strong> pages</span>
+        </div>
+        <div class="setting" style="margin-bottom:0">
+          <label for="order">Print order</label>
+          <select id="order">
+            <option value="banner">Banner order</option>
+            <option value="grouped">Grouped 0-9</option>
+          </select>
+          <output></output>
+        </div>
+      </div>
+
+      <div class="card" data-panel="pick" hidden>
+        <h2>Pick numbers</h2>
+        <div class="pad" id="pad"></div>
+        <div class="row">
+          <input type="text" id="typed" placeholder="Or type a set, e.g. 1214 0800" inputmode="numeric" autocomplete="off">
+          <button class="btn" id="addTyped">Add</button>
+        </div>
+        <p class="hint">Each tap adds one page. Numbers print in the order you add them.</p>
+      </div>
+
+      <div class="card" data-panel="pick" hidden>
+        <h2>To print</h2>
+        <div class="queue" id="queue"></div>
+        <div class="row">
+          <button class="btn" id="undo">Undo last</button>
+          <button class="btn" id="clear">Clear all</button>
+        </div>
+      </div>
+
+      <details class="card">
+        <summary>Print settings</summary>
+        <div class="setting">
+          <label for="weight">Weight</label>
+          <select id="weight">
+            <option value="600">Poppins SemiBold</option>
+            <option value="700" selected>Poppins Bold</option>
+            <option value="800">Poppins ExtraBold</option>
+          </select>
+          <output></output>
+        </div>
+        <div class="setting">
+          <label for="height">Number height</label>
+          <input type="range" id="height" min="6" max="8.75" step="0.25" value="8.5">
+          <output id="heightOut">8.5 in</output>
+        </div>
+        <div class="setting">
+          <label for="width">Width</label>
+          <input type="range" id="width" min="70" max="110" step="1" value="90">
+          <output id="widthOut">90%</output>
+        </div>
+        <div class="setting">
+          <label for="trim">Trim line</label>
+          <input type="range" id="trim" min="0" max="100" step="5" value="20">
+          <output id="trimOut">20%</output>
+        </div>
+        <div class="setting">
+          <label for="crops">Crop marks</label>
+          <input type="checkbox" id="crops" checked style="justify-self:start">
+          <output></output>
+        </div>
+        <p class="hint">Defaults match the Tree Lighting banner file: 8.5 in tall, 90% width, 6x9 trim. Trim line 0% = off.</p>
+      </details>
+
+      <div class="card">
+        <button class="btn primary" id="print" disabled>Print</button>
+        <p class="hint">In the print dialog set <b>Scale: 100%</b> (or "Actual size") and <b>Margins: None</b>. Choose "Save as PDF" to send it to someone else.</p>
+      </div>
     </div>
-    <div id="pages"></div>
-  </section>
-</main>
+
+    <section class="card">
+      <div class="preview-head">
+        <h2>Print preview</h2>
+        <span id="pageCount">0 pages</span>
+      </div>
+      <div id="pages"></div>
+    </section>
+  </div>
+</div>
 
 <div id="print-root"></div>
 
 <script>
 (() => {
-  // Page geometry, in inches. Letter page, 6x9 trim centered (matches the original file).
-  const PAGE_W = 8.5, PAGE_H = 11;
-  const TRIM_W = 6, TRIM_H = 9;
-  const TX = (PAGE_W - TRIM_W) / 2;   // 1.25
-  const TY = (PAGE_H - TRIM_H) / 2;   // 1.0
-  const MARK_LEN = 0.375, MARK_GAP = 0.0625, MARK_STROKE = 0.25 / 72; // 0.25pt
-  const TRIM_STROKE = 0.5 / 72;       // 0.5pt
-  const INK = "#231f20";
-  const SIDE_PAD = 0.04;              // keep wide digits just inside the trim
+  // ---------- Page geometry (inches). Letter page, 6x9 trim centered, like the original file. ----------
+  const PAGE_W = 8.5, PAGE_H = 11, TRIM_W = 6, TRIM_H = 9;
+  const TX = (PAGE_W - TRIM_W) / 2, TY = (PAGE_H - TRIM_H) / 2;
+  const MARK_LEN = 0.375, MARK_GAP = 0.0625, MARK_STROKE = 0.25 / 72, TRIM_STROKE = 0.5 / 72;
+  const INK = "#231f20", SIDE_PAD = 0.04, FS = 100;
+  const DIGITS = ["1","2","3","4","5","6","7","8","9","0"];
+  const DIGITS_SORTED = ["0","1","2","3","4","5","6","7","8","9"];
+  const DEFAULT_TITLE = "Bethany Village Event Numbers";
 
-  const STORE_KEY = "number-printing-v2";
-  const state = { queue: [], weight: "700", height: 8.5, width: 90, trim: 20, crops: true };
+  // Banner layout: XX / XX FROM XX : XX TO XX : XX
+  const LAYOUT = [
+    { slots: 2 }, { sep: "/" }, { slots: 2 },
+    { word: "From" },
+    { slots: 2 }, { sep: ":" }, { slots: 2 },
+    { word: "To" },
+    { slots: 2 }, { sep: ":" }, { slots: 2 },
+  ];
+  const SLOT_COUNT = LAYOUT.reduce((n, p) => n + (p.slots || 0), 0);
+
+  // ---------- State ----------
+  const STORE_KEY = "event-numbers-v1";
+  const state = {
+    tab: "banner", title: DEFAULT_TITLE,
+    slots: Array(SLOT_COUNT).fill(""), copies: 1, order: "banner",
+    queue: [], weight: "700", height: 8.5, width: 90, trim: 20, crops: true,
+  };
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE_KEY) || "{}")); } catch (e) {}
+  if (!Array.isArray(state.slots) || state.slots.length !== SLOT_COUNT) state.slots = Array(SLOT_COUNT).fill("");
   const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} };
+  let active = 0;
 
   const $ = (id) => document.getElementById(id);
-  const pad = $("pad"), queueEl = $("queue"), pagesEl = $("pages"), printRoot = $("print-root");
 
-  // Keypad 1-9 then 0, like a phone row layout but in two rows of five.
-  const DIGITS = ["1","2","3","4","5","6","7","8","9","0"];
+  // ---------- Tabs ----------
+  const tabBtns = document.querySelectorAll(".tabs button");
+  function showTab() {
+    tabBtns.forEach((b) => b.classList.toggle("on", b.dataset.tab === state.tab));
+    document.querySelectorAll("[data-panel]").forEach((el) => { el.hidden = el.dataset.panel !== state.tab; });
+  }
+  tabBtns.forEach((b) => b.addEventListener("click", () => { state.tab = b.dataset.tab; showTab(); update(); }));
+
+  // ---------- Banner mockup ----------
+  const titleEl = $("signTitle"), rowEl = $("signRow");
+  titleEl.textContent = state.title;
+  titleEl.addEventListener("input", () => { state.title = titleEl.textContent; save(); });
+  titleEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); titleEl.blur(); } });
+  titleEl.addEventListener("blur", () => {
+    if (!titleEl.textContent.trim()) { titleEl.textContent = DEFAULT_TITLE; state.title = DEFAULT_TITLE; save(); }
+  });
+
+  const slotEls = [];
+  let si = 0;
+  LAYOUT.forEach((part) => {
+    if (part.slots) {
+      for (let k = 0; k < part.slots; k++) {
+        const i = si++;
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "slot";
+        b.addEventListener("click", () => { active = i; renderSlots(); });
+        rowEl.appendChild(b); slotEls.push(b);
+      }
+    } else {
+      const s = document.createElement("span");
+      s.className = part.sep ? "sep" : "word";
+      s.textContent = part.sep || part.word.toUpperCase();
+      rowEl.appendChild(s);
+    }
+  });
+
+  function renderSlots() {
+    slotEls.forEach((el, i) => {
+      el.textContent = state.slots[i];
+      el.classList.toggle("blank", !state.slots[i]);
+      el.classList.toggle("active", i === active);
+      el.setAttribute("aria-label", `Box ${i + 1}: ${state.slots[i] || "blank"}`);
+    });
+  }
+  function setSlot(v) {
+    state.slots[active] = v;
+    if (active < SLOT_COUNT - 1) active++;
+    update();
+  }
+
+  const bannerPad = $("bannerPad");
+  DIGITS.forEach((d) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = d;
+    b.addEventListener("click", () => setSlot(d));
+    bannerPad.appendChild(b);
+  });
+  $("slotBlank").addEventListener("click", () => setSlot(""));
+  $("bannerClear").addEventListener("click", () => { state.slots = Array(SLOT_COUNT).fill(""); active = 0; update(); });
+
+  document.addEventListener("keydown", (e) => {
+    if (state.tab !== "banner") return;
+    const t = e.target;
+    if (t === titleEl || t.tagName === "INPUT" || t.tagName === "SELECT") return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^[0-9]$/.test(e.key)) { e.preventDefault(); setSlot(e.key); }
+    else if (e.key === " ") { e.preventDefault(); setSlot(""); }
+    else if (e.key === "Backspace") {
+      e.preventDefault();
+      if (!state.slots[active] && active > 0) active--;
+      state.slots[active] = ""; update();
+    }
+    else if (e.key === "Delete") { e.preventDefault(); state.slots[active] = ""; update(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); active = Math.max(0, active - 1); renderSlots(); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); active = Math.min(SLOT_COUNT - 1, active + 1); renderSlots(); }
+  });
+
+  // Tally of numbers needed
+  const tallyEl = $("tally");
+  const tallyCells = {};
+  DIGITS_SORTED.forEach((d) => {
+    const c = document.createElement("div");
+    c.innerHTML = `<b>${d}</b><span>×0</span>`;
+    tallyEl.appendChild(c); tallyCells[d] = c;
+  });
+  function bannerDigits() {
+    const once = state.slots.filter(Boolean);
+    let list = [];
+    if (state.order === "grouped") {
+      DIGITS_SORTED.forEach((d) => {
+        const n = once.filter((x) => x === d).length * state.copies;
+        for (let k = 0; k < n; k++) list.push(d);
+      });
+    } else {
+      for (let c = 0; c < state.copies; c++) list = list.concat(once);
+    }
+    return list;
+  }
+  function renderTally() {
+    const counts = {};
+    state.slots.forEach((d) => { if (d) counts[d] = (counts[d] || 0) + state.copies; });
+    DIGITS_SORTED.forEach((d) => {
+      const n = counts[d] || 0;
+      tallyCells[d].querySelector("span").textContent = `×${n}`;
+      tallyCells[d].classList.toggle("zero", !n);
+      tallyCells[d].classList.toggle("has", n > 0);
+    });
+    $("bannerTotal").textContent = Object.values(counts).reduce((a, b) => a + b, 0);
+    $("copiesOut").textContent = state.copies;
+  }
+  $("copiesMinus").addEventListener("click", () => { state.copies = Math.max(1, state.copies - 1); update(); });
+  $("copiesPlus").addEventListener("click", () => { state.copies = Math.min(20, state.copies + 1); update(); });
+  const orderEl = $("order");
+  orderEl.value = state.order;
+  orderEl.addEventListener("change", () => { state.order = orderEl.value; update(); });
+
+  // ---------- Pick tab ----------
+  const pad = $("pad"), queueEl = $("queue");
   DIGITS.forEach((d) => {
     const b = document.createElement("button");
     b.type = "button";
@@ -179,95 +423,9 @@
     b.addEventListener("click", () => { state.queue.push(d); update(); });
     pad.appendChild(b);
   });
-
-  // Glyph metrics, measured from the real font so sizing is exact.
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  let metrics = {}; // digit -> {left, right, ascent, descent} as fraction of font size
-
-  // Draw each digit big on a hidden canvas and scan the pixels for its true ink box.
-  function measureAll() {
-    const S = 600, W = S * 2, H = S * 2, ox = S / 2, oy = S * 1.5;
-    canvas.width = W; canvas.height = H;
-    metrics = {};
-    DIGITS.forEach((d) => {
-      ctx.clearRect(0, 0, W, H);
-      ctx.font = `${state.weight} ${S}px Poppins`;
-      ctx.fillStyle = "#000";
-      ctx.textBaseline = "alphabetic";
-      ctx.fillText(d, ox, oy);
-      const px = ctx.getImageData(0, 0, W, H).data;
-      let x0 = W, x1 = -1, y0 = H, y1 = -1;
-      for (let y = 0; y < H; y++) {
-        for (let x = 0; x < W; x++) {
-          if (px[(y * W + x) * 4 + 3] > 127) {
-            if (x < x0) x0 = x; if (x > x1) x1 = x;
-            if (y < y0) y0 = y; if (y > y1) y1 = y;
-          }
-        }
-      }
-      metrics[d] = {
-        left: (ox - x0) / S, right: (x1 + 1 - ox) / S,
-        ascent: (oy - y0) / S, descent: (y1 + 1 - oy) / S,
-      };
-    });
-  }
-
-  // Each digit is fit to the same ink height (like the original file), then
-  // condensed horizontally by the Width setting, and never wider than the trim.
-  const FS = 100; // font-size used inside the SVG; transforms scale it to inches
-  function digitTransform(d) {
-    const m = metrics[d];
-    const inkH = m.ascent + m.descent, inkW = m.left + m.right;
-    const sy = state.height / inkH;
-    let sx = sy * (state.width / 100);
-    const maxW = TRIM_W - SIDE_PAD * 2;
-    if (inkW * sx > maxW) sx = maxW / inkW;
-    const x = TX + (TRIM_W - inkW * sx) / 2 + m.left * sx;
-    const y = TY + (TRIM_H - state.height) / 2 + m.ascent * sy;
-    return { x, y, sx: sx / FS, sy: sy / FS };
-  }
-
-  function cropMarks() {
-    if (!state.crops) return "";
-    const L = TX, R = TX + TRIM_W, T = TY, B = TY + TRIM_H;
-    const g = MARK_GAP, n = MARK_LEN;
-    const lines = [
-      // top-left
-      [L, T - g, L, T - g - n], [L - g, T, L - g - n, T],
-      // top-right
-      [R, T - g, R, T - g - n], [R + g, T, R + g + n, T],
-      // bottom-left
-      [L, B + g, L, B + g + n], [L - g, B, L - g - n, B],
-      // bottom-right
-      [R, B + g, R, B + g + n], [R + g, B, R + g + n, B],
-    ];
-    return `<g stroke="#000" stroke-width="${MARK_STROKE}" fill="none">` +
-      lines.map(([x1, y1, x2, y2]) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`).join("") + `</g>`;
-  }
-
-  function trimLine() {
-    if (!state.trim) return "";
-    // 0% = white, 100% = mid gray. Kept light on purpose.
-    const v = Math.round(255 - (state.trim / 100) * 127);
-    const c = `rgb(${v},${v},${v})`;
-    return `<rect x="${TX}" y="${TY}" width="${TRIM_W}" height="${TRIM_H}" fill="none" stroke="${c}" stroke-width="${TRIM_STROKE}"/>`;
-  }
-
-  function pageSVG(d) {
-    const t = digitTransform(d);
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_W} ${PAGE_H}" preserveAspectRatio="xMidYMid meet">` +
-      `<rect width="${PAGE_W}" height="${PAGE_H}" fill="#fff"/>` +
-      trimLine() + cropMarks() +
-      `<text transform="translate(${t.x} ${t.y}) scale(${t.sx} ${t.sy})" font-family="Poppins" font-weight="${state.weight}" font-size="${FS}" fill="${INK}">${d}</text>` +
-      `</svg>`;
-  }
-
   function renderQueue() {
     queueEl.innerHTML = "";
-    if (!state.queue.length) {
-      queueEl.innerHTML = `<span class="empty">Nothing yet. Tap numbers above.</span>`;
-    }
+    if (!state.queue.length) queueEl.innerHTML = `<span class="empty">Nothing yet. Tap numbers above.</span>`;
     state.queue.forEach((d, i) => {
       const chip = document.createElement("span");
       chip.className = "chip";
@@ -279,39 +437,98 @@
     state.queue.forEach((d) => (counts[d] = (counts[d] || 0) + 1));
     pad.querySelectorAll(".count").forEach((el) => {
       const c = counts[el.dataset.d] || 0;
-      el.textContent = c;
-      el.classList.toggle("on", c > 0);
+      el.textContent = c; el.classList.toggle("on", c > 0);
     });
   }
-
-  function renderPages() {
-    const html = state.queue.map((d) => `<div class="page">${pageSVG(d)}</div>`).join("");
-    pagesEl.innerHTML = html || `<div class="placeholder">Your pages will show up here.</div>`;
-    printRoot.innerHTML = html;
-    const n = state.queue.length;
-    $("pageCount").textContent = `${n} page${n === 1 ? "" : "s"}`;
-    $("print").disabled = n === 0;
-  }
-
-  function update() {
-    renderQueue();
-    renderPages();
-    save();
-  }
-
-  // Controls
-  $("addTyped").addEventListener("click", addTyped);
-  $("typed").addEventListener("keydown", (e) => { if (e.key === "Enter") addTyped(); });
   function addTyped() {
     const digits = ($("typed").value.match(/[0-9]/g) || []);
     if (!digits.length) return;
-    state.queue.push(...digits);
-    $("typed").value = "";
-    update();
+    state.queue.push(...digits); $("typed").value = ""; update();
   }
+  $("addTyped").addEventListener("click", addTyped);
+  $("typed").addEventListener("keydown", (e) => { if (e.key === "Enter") addTyped(); });
   $("undo").addEventListener("click", () => { state.queue.pop(); update(); });
   $("clear").addEventListener("click", () => { state.queue = []; update(); });
 
+  // ---------- Glyph measurement (scan real pixels for the exact ink box) ----------
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  let metrics = {};
+  function measureAll() {
+    const S = 600, W = S * 2, H = S * 2, ox = S / 2, oy = S * 1.5;
+    canvas.width = W; canvas.height = H;
+    metrics = {};
+    DIGITS.forEach((d) => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.font = `${state.weight} ${S}px Poppins`;
+      ctx.fillStyle = "#000"; ctx.textBaseline = "alphabetic";
+      ctx.fillText(d, ox, oy);
+      const px = ctx.getImageData(0, 0, W, H).data;
+      let x0 = W, x1 = -1, y0 = H, y1 = -1;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        if (px[(y * W + x) * 4 + 3] > 127) {
+          if (x < x0) x0 = x; if (x > x1) x1 = x;
+          if (y < y0) y0 = y; if (y > y1) y1 = y;
+        }
+      }
+      metrics[d] = { left: (ox - x0) / S, right: (x1 + 1 - ox) / S, ascent: (oy - y0) / S, descent: (y1 + 1 - oy) / S };
+    });
+  }
+
+  // Each digit fit to the same ink height, condensed by Width, never wider than the trim.
+  function digitTransform(d) {
+    const m = metrics[d];
+    const inkH = m.ascent + m.descent, inkW = m.left + m.right;
+    const sy = state.height / inkH;
+    let sx = sy * (state.width / 100);
+    const maxW = TRIM_W - SIDE_PAD * 2;
+    if (inkW * sx > maxW) sx = maxW / inkW;
+    const x = TX + (TRIM_W - inkW * sx) / 2 + m.left * sx;
+    const y = TY + (TRIM_H - state.height) / 2 + m.ascent * sy;
+    return { x, y, sx: sx / FS, sy: sy / FS };
+  }
+  function cropMarks() {
+    if (!state.crops) return "";
+    const L = TX, R = TX + TRIM_W, T = TY, B = TY + TRIM_H, g = MARK_GAP, n = MARK_LEN;
+    const lines = [
+      [L, T - g, L, T - g - n], [L - g, T, L - g - n, T],
+      [R, T - g, R, T - g - n], [R + g, T, R + g + n, T],
+      [L, B + g, L, B + g + n], [L - g, B, L - g - n, B],
+      [R, B + g, R, B + g + n], [R + g, B, R + g + n, B],
+    ];
+    return `<g stroke="#000" stroke-width="${MARK_STROKE}" fill="none">` +
+      lines.map(([x1, y1, x2, y2]) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`).join("") + `</g>`;
+  }
+  function trimLine() {
+    if (!state.trim) return "";
+    const v = Math.round(255 - (state.trim / 100) * 127);
+    return `<rect x="${TX}" y="${TY}" width="${TRIM_W}" height="${TRIM_H}" fill="none" stroke="rgb(${v},${v},${v})" stroke-width="${TRIM_STROKE}"/>`;
+  }
+  function pageSVG(d) {
+    const t = digitTransform(d);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_W} ${PAGE_H}" preserveAspectRatio="xMidYMid meet">` +
+      `<rect width="${PAGE_W}" height="${PAGE_H}" fill="#fff"/>` + trimLine() + cropMarks() +
+      `<text transform="translate(${t.x} ${t.y}) scale(${t.sx} ${t.sy})" font-family="Poppins" font-weight="${state.weight}" font-size="${FS}" fill="${INK}">${d}</text>` +
+      `</svg>`;
+  }
+
+  // ---------- Preview + print ----------
+  const pagesEl = $("pages"), printRoot = $("print-root");
+  function currentList() { return state.tab === "banner" ? bannerDigits() : state.queue; }
+  function renderPages() {
+    if (!Object.keys(metrics).length) return;
+    const list = currentList();
+    pagesEl.innerHTML = list.map((d, i) => `<div class="page">${pageSVG(d)}<i>${i + 1}</i></div>`).join("") ||
+      `<div class="placeholder">${state.tab === "banner" ? "Fill in the banner above and your pages show up here." : "Your pages will show up here."}</div>`;
+    printRoot.innerHTML = list.map((d) => `<div class="page">${pageSVG(d)}</div>`).join("");
+    const n = list.length;
+    $("pageCount").textContent = `${n} page${n === 1 ? "" : "s"}`;
+    $("print").disabled = n === 0;
+    $("print").textContent = n ? `Print ${n} page${n === 1 ? "" : "s"}` : "Print";
+  }
+  function update() { renderSlots(); renderTally(); renderQueue(); renderPages(); save(); }
+
+  // ---------- Settings ----------
   const weightEl = $("weight"), heightEl = $("height"), widthEl = $("width"), trimEl = $("trim"), cropsEl = $("crops");
   weightEl.value = state.weight; heightEl.value = state.height; widthEl.value = state.width; trimEl.value = state.trim; cropsEl.checked = state.crops;
   const showOutputs = () => {
@@ -319,17 +536,14 @@
     $("widthOut").textContent = `${state.width}%`;
     $("trimOut").textContent = state.trim ? `${state.trim}%` : "Off";
   };
-  weightEl.addEventListener("change", async () => { state.weight = weightEl.value; await loadFont(); measureAll(); update(); });
+  weightEl.addEventListener("change", () => { state.weight = weightEl.value; measureAll(); update(); });
   heightEl.addEventListener("input", () => { state.height = parseFloat(heightEl.value); showOutputs(); update(); });
   widthEl.addEventListener("input", () => { state.width = parseInt(widthEl.value, 10); showOutputs(); update(); });
   trimEl.addEventListener("input", () => { state.trim = parseInt(trimEl.value, 10); showOutputs(); update(); });
   cropsEl.addEventListener("change", () => { state.crops = cropsEl.checked; update(); });
   $("print").addEventListener("click", async () => { await document.fonts.ready; window.print(); });
 
-  const loadFont = () => document.fonts.load(`${state.weight} 100px Poppins`, "0123456789").catch(() => {});
-
-  // Start once the font is in, so measurements are real.
-  showOutputs();
+  showOutputs(); showTab(); renderSlots(); renderTally(); renderQueue();
   Promise.all(["600", "700", "800"].map((w) => document.fonts.load(`${w} 100px Poppins`, "0123456789")))
     .catch(() => {})
     .then(() => { measureAll(); update(); });

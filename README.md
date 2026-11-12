@@ -1,12 +1,18 @@
-# Number Printing
+# Bethany Village Event Numbers
 
-Print 6x9 banner numbers (0-9), one per letter page, with crop marks and a faint gray trim line. Set in Poppins, sized to match the Tree Lighting banner file (8.5" tall digits, 90% width, 6x9 trim centered on 8.5x11).
+Print 6x9 banner numbers, one per letter page, with crop marks and a faint gray trim line. Set in Poppins Bold, sized to match the Tree Lighting banner file (8.5" tall digits, 90% width, 6x9 trim centered on 8.5x11).
 
-## Use it
-1. Open the site.
-2. Tap numbers 0-9 (each tap = one page), or type a set like `1214 0800`.
-3. Click **Print**. In the print dialog: **Scale 100% / Actual size**, **Margins: None**. Choose "Save as PDF" to send the file.
+## Event banner
+1. Click a box on the mockup (`XX/XX FROM XX:XX TO XX:XX`) and type or tap a number. Leave boxes blank where you don't need a digit (like the first box in `4:00`).
+2. "Numbers you need" shows how many of each number to print. Bump "Banners" if you're making more than one.
+3. Click **Print**. The title on the mockup is editable.
 
-Settings: weight (SemiBold / Bold / ExtraBold), number height, width, trim line shade (0% = off), crop marks on/off.
+## Pick numbers
+Tap any 0-9 (each tap = one page), or type a set like `1214 0800`, then print.
+
+## Printing
+In the print dialog: **Scale 100% / Actual size**, **Margins: None**. "Save as PDF" makes a file to send.
+
+Print settings (weight, height, width, trim line shade, crop marks) are under "Print settings". Everything is saved in your browser.
 
 Poppins is bundled under the SIL Open Font License (`fonts/OFL.txt`).
