@@ -133,6 +133,13 @@
   .need-sum { flex-basis: 100%; text-transform: none; letter-spacing: 0; font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.4; }
   .need-sum em { font-style: normal; color: var(--accent); }
   .need-sum.empty { font-weight: 500; color: var(--muted); font-size: 14px; }
+  .lockcell { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; }
+  .lock { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 7px; background: #fff; cursor: pointer; padding: 0;
+    display: grid; place-items: center; color: var(--muted); flex: none; }
+  .lock:hover { background: #f7f6f4; color: var(--ink); }
+  .lock[aria-pressed="false"] { color: #b06a00; border-color: #f0d6a8; background: #fff8ec; }
+  .lock svg { width: 15px; height: 15px; display: block; }
+  .setting.locked select, .setting.locked input[type=range] { opacity: .5; cursor: not-allowed; }
   .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; justify-self: start; font-size: 13px; font-weight: 600; color: var(--muted); }
   .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .switch .track { width: 40px; height: 22px; border-radius: 11px; background: #d6d3cf; position: relative; transition: background .15s; flex: none; }
@@ -357,21 +364,21 @@
         <div class="setting">
           <label for="weight">Weight</label>
           <select id="weight">
-            <option value="600">Poppins SemiBold</option>
-            <option value="700" selected>Poppins Bold</option>
-            <option value="800">Poppins ExtraBold</option>
+            <option value="600">SemiBold</option>
+            <option value="700" selected>Bold</option>
+            <option value="800">ExtraBold</option>
           </select>
-          <output></output>
+          <span class="lockcell"><output></output><button type="button" class="lock" data-lock="weight" aria-pressed="true" title="Locked. Click to unlock"></button></span>
         </div>
         <div class="setting">
           <label for="height">Number height</label>
           <input type="range" id="height" min="6" max="8.75" step="0.25" value="8.5">
-          <output id="heightOut">8.5 in</output>
+          <span class="lockcell"><output id="heightOut">8.5 in</output><button type="button" class="lock" data-lock="height" aria-pressed="true" title="Locked. Click to unlock"></button></span>
         </div>
         <div class="setting">
           <label for="width">Width</label>
           <input type="range" id="width" min="70" max="110" step="1" value="90">
-          <output id="widthOut">90%</output>
+          <span class="lockcell"><output id="widthOut">90%</output><button type="button" class="lock" data-lock="width" aria-pressed="true" title="Locked. Click to unlock"></button></span>
         </div>
         <div class="setting">
           <label for="trimOn">Faint grey trim line</label>
@@ -379,7 +386,7 @@
           <output></output>
         </div>
         <div class="setting" id="trimShadeRow">
-          <label for="trim">Line shade</label>
+          <label for="trim">Trim line opacity</label>
           <input type="range" id="trim" min="5" max="100" step="5" value="20">
           <output id="trimOut">20%</output>
         </div>
@@ -388,7 +395,7 @@
           <input type="checkbox" id="crops" checked style="justify-self:start">
           <output></output>
         </div>
-        <p class="hint">Defaults match the Tree Lighting banner file: 8.5 in tall, 90% width, 6x9 trim. The faint grey trim line outlines the 6x9 cut; it starts off.</p>
+        <p class="hint">Weight, height and width are locked to match the Tree Lighting banner file (Poppins Bold, 8.5 in tall, 90% width). Click a lock to change one. The faint grey trim line outlines the 6x9 cut; it starts off.</p>
       </details>
 
       <div class="card">
@@ -456,6 +463,7 @@
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE_KEY) || "{}")); } catch (e) {}
   if (state.title === "Event Numbers") state.title = DEFAULT_TITLE;
   if (typeof state.note !== "string") state.note = DEFAULT_NOTE;
+  state.trimOn = false; // the faint grey trim line always starts off
   if (!LAYOUTS[state.layout]) state.layout = "standard";
   if (typeof state.kicker !== "string") state.kicker = "";
   if (!state.slotStore || typeof state.slotStore !== "object") state.slotStore = {};
@@ -1073,12 +1081,32 @@
   const weightEl = $("weight"), heightEl = $("height"), widthEl = $("width"), trimEl = $("trim"), cropsEl = $("crops");
   weightEl.value = state.weight; heightEl.value = state.height; widthEl.value = state.width; trimEl.value = state.trim || 20; cropsEl.checked = state.crops;
   const trimOnEl = $("trimOn"); trimOnEl.checked = !!state.trimOn;
+  // Locks: weight, height and width start locked on every visit.
+  const LOCK_SVG = {
+    closed: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+    open: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>',
+  };
+  const lockTargets = { weight: weightEl, height: heightEl, width: widthEl };
+  function setLock(btn, locked) {
+    const el = lockTargets[btn.dataset.lock];
+    el.disabled = locked;
+    el.closest(".setting").classList.toggle("locked", locked);
+    btn.setAttribute("aria-pressed", String(locked));
+    btn.title = locked ? "Locked. Click to unlock" : "Unlocked. Click to lock";
+    btn.setAttribute("aria-label", `${locked ? "Unlock" : "Lock"} ${btn.dataset.lock}`);
+    btn.innerHTML = locked ? LOCK_SVG.closed : LOCK_SVG.open;
+  }
+  document.querySelectorAll(".lock").forEach((btn) => {
+    setLock(btn, true);
+    btn.addEventListener("click", () => setLock(btn, btn.getAttribute("aria-pressed") !== "true"));
+  });
+
   const showOutputs = () => {
     $("heightOut").textContent = `${state.height} in`;
     $("widthOut").textContent = `${state.width}%`;
     $("trimOut").textContent = `${state.trim}%`;
     $("trimOnText").textContent = state.trimOn ? "On" : "Off";
-    $("trimShadeRow").style.opacity = state.trimOn ? "1" : ".4";
+    $("trimShadeRow").hidden = !state.trimOn;
     trimEl.disabled = !state.trimOn;
   };
   weightEl.addEventListener("change", () => { state.weight = weightEl.value; buildGlyphs(); update(); });
