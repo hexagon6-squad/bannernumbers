@@ -100,6 +100,8 @@
   .pad-row button:hover { background: #f7f6f4; }
   .pad-row button:active { transform: scale(.95); }
   .fillbar-actions { display: flex; gap: 6px; }
+  .fillbar-actions .clear-num { background: #E8604C; border-color: #E8604C; color: #fff; }
+  .fillbar-actions .clear-num:hover { background: #d4503d; border-color: #d4503d; }
   .fillbar-actions .btn { height: 52px; }
   @media (max-width: 700px) { .fillbar-label { width: 100%; } .pad-row button, .fillbar-actions .btn { height: 44px; } .fillbar-actions { width: 100%; } .fillbar-actions .btn { flex: 1; } }
   .pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
@@ -309,7 +311,7 @@
       <div class="pad-row" id="bannerPad"></div>
       <div class="fillbar-actions">
         <button class="btn" id="slotBlank" type="button">Leave blank</button>
-        <button class="btn" id="bannerClear" type="button">Clear numbers</button>
+        <button class="btn clear-num" id="bannerClear" type="button">Clear numbers</button>
       </div>
     </div>
     <p class="hint" style="text-align:center">Click a box, then tap a number or type <kbd>0</kbd>-<kbd>9</kbd>. <kbd>Space</kbd> leaves it blank, <kbd>⌫</kbd> goes back, <kbd>←</kbd><kbd>→</kbd> move.</p>
