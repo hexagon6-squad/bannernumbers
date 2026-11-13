@@ -321,7 +321,7 @@
         <summary>How to print</summary>
         <ol class="steps" style="margin-top:12px">
           <li><b data-panel="banner">Fill in the banner</b><b data-panel="pick" hidden>Pick your numbers</b>
-            <span data-panel="banner">Click a box on the banner, then tap a number in the Fill the box row ("Clear numbers" empties the boxes, "Clear banner" resets everything). Open "Numbers you need" to see the count.</span>
+            <span data-panel="banner">Click a box on the banner, then tap a number in the Fill the box row ("Clear numbers" empties the boxes, "Clear banner" resets everything). Open "Number tally" to see the count.</span>
             <span data-panel="pick" hidden>Tap 0-9 or type a set. Each number is one page.</span></li>
           <li><b>Click Print</b><span>The green Print button at the bottom of this panel opens the PDF preview in a new tab. For the sign itself, use "Print banner mockup."</span></li>
           <li><b>Click print in the preview</b><span>Use the print icon in the PDF preview tab. If no tab opens, allow pop-ups, or use Download PDF and open the file.</span></li>
@@ -331,7 +331,7 @@
       </details>
 
       <details class="card need" data-panel="banner" id="needBox">
-        <summary>Numbers you need<span class="need-sum" id="needSum">None yet</span></summary>
+        <summary>Number tally<span class="need-sum" id="needSum">None yet</span></summary>
         <div class="tally" id="tally" style="margin-top:12px"></div>
         <div class="total">
           <span>Banners
@@ -729,7 +729,7 @@
     $("bannerTotal").textContent = total;
     const sum = $("needSum");
     const parts = DIGITS_SORTED.filter((d) => counts[d]).map((d) => `<span style="white-space:nowrap">${d}<em> ×${counts[d]}</em></span>`);
-    sum.innerHTML = parts.length ? `${parts.join('<span style="color:#c9c6c2"> &nbsp;|&nbsp; </span>')} &nbsp;=&nbsp; ${total} page${total === 1 ? "" : "s"}` : "None yet";
+    sum.innerHTML = parts.length ? `${parts.join('<span style="color:#c9c6c2"> &nbsp;|&nbsp; </span>')}` : "None yet";
     sum.classList.toggle("empty", !parts.length);
     $("copiesOut").textContent = state.copies;
   }
