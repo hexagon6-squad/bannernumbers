@@ -144,6 +144,8 @@
     box-shadow: 0 6px 18px rgba(0,0,0,.18); opacity: 0; visibility: hidden; transition: opacity .12s; z-index: 20; pointer-events: none; }
   .info .tip::after { content: ""; position: absolute; top: 100%; left: 59px; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--ink); }
   .info:hover .tip, .info:focus-visible .tip, .info.open .tip { opacity: 1; visibility: visible; }
+  .reset-link { margin-top: 10px; border: 0; background: none; padding: 0; font: 600 12px "Poppins", sans-serif; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .reset-link:hover { color: var(--ink); }
   .lockcell { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; }
   .lock { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 7px; background: #fff; cursor: pointer; padding: 0;
     display: grid; place-items: center; color: var(--muted); flex: none; }
@@ -416,6 +418,7 @@
           <output></output>
         </div>
         <p class="hint">Weight, height and width are locked to match the Tree Lighting banner file (Poppins Bold, 8.5 in tall, 90% width). Click a lock to change one. The faint grey trim line outlines the 6x9 cut; it starts off.</p>
+        <button type="button" class="reset-link" id="resetSettings">Reset print settings</button>
       </details>
 
       <div class="card">
@@ -1125,6 +1128,14 @@
   document.querySelectorAll(".lock").forEach((btn) => {
     setLock(btn, true);
     btn.addEventListener("click", () => setLock(btn, btn.getAttribute("aria-pressed") !== "true"));
+  });
+
+  $("resetSettings").addEventListener("click", () => {
+    Object.assign(state, { weight: "700", height: 8.5, width: 90, trimOn: false, trim: 20, crops: true });
+    weightEl.value = "700"; heightEl.value = 8.5; widthEl.value = 90; trimEl.value = 20;
+    trimOnEl.checked = false; cropsEl.checked = true;
+    document.querySelectorAll(".lock").forEach((btn) => setLock(btn, true));
+    buildGlyphs(); showOutputs(); update();
   });
 
   const showOutputs = () => {
