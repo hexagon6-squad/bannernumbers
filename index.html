@@ -29,7 +29,7 @@
   [hidden] { display: none !important; }
 
   /* ---------- Banner mockup ---------- */
-  .mock-card { margin-bottom: 20px; padding: 24px; }
+  .mock-card { margin-bottom: 20px; padding: 24px; position: relative; overflow: hidden; }
   .mock-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
   .mock-top h2 { margin: 0; }
   .mock-top span { font-size: 13px; color: var(--muted); }
@@ -548,7 +548,88 @@
   });
   graphicSel.addEventListener("change", () => { state.graphic = graphicSel.value; renderIcons(); save(); });
   // Clear banner: back to Custom, default name, no line above, no graphics, standard layout, default note, no numbers.
+  let crumpling = false;
   $("clearAll").addEventListener("click", () => {
+    if (crumpling) return;
+    const r = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (r) return resetBanner();
+    crumpleBanner(resetBanner);
+  });
+
+  // Paper crumple: the sign scrunches into a ball, the ball hops into a trash can, a fresh sign unfolds.
+  const PAPER_BALL = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M50 6 L68 12 L84 24 L93 44 L90 64 L80 82 L60 94 L38 93 L20 84 L9 66 L7 44 L16 24 L32 11 Z" fill="#f4f2ee" stroke="#cfc9c1" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M50 6 L46 30 L28 40 L7 44 M46 30 L66 36 L84 24 M66 36 L70 58 L90 64 M70 58 L52 66 L38 93 M52 66 L30 60 L9 66 M30 60 L28 40 M70 58 L80 82 M28 40 L16 24"
+      fill="none" stroke="#d9d3cb" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M46 30 L66 36 L70 58 L52 66 L30 60 L28 40 Z" fill="#ebe7e1"/>
+  </svg>`;
+  const TRASH_CAN = `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g class="lid"><rect x="8" y="14" width="84" height="12" rx="4" fill="#8a8580"/><rect x="38" y="4" width="24" height="12" rx="4" fill="#8a8580"/></g>
+    <path d="M14 30 L86 30 L79 114 Q78 118 74 118 L26 118 Q22 118 21 114 Z" fill="#a8a29c"/>
+    <path d="M34 42 L37 106 M50 42 L50 106 M66 42 L63 106" stroke="#8a8580" stroke-width="5" stroke-linecap="round"/>
+  </svg>`;
+  function crumpleBanner(done) {
+    crumpling = true;
+    const card = signEl.closest(".mock-card");
+    const cR = card.getBoundingClientRect(), sR = signEl.getBoundingClientRect();
+    const scx = sR.left - cR.left + sR.width / 2, scy = sR.top - cR.top + sR.height / 2;
+    const ball = Math.max(56, Math.min(90, sR.width * 0.08));
+    const canW = ball * 1.5, canH = canW * 1.2;
+    const canX = sR.right - cR.left - canW - 10, canY = sR.bottom - cR.top - canH + canH * 0.05;
+
+    const can = document.createElement("div");
+    can.innerHTML = TRASH_CAN;
+    can.style.cssText = `position:absolute;left:${canX}px;top:${canY}px;width:${canW}px;height:${canH}px;z-index:6;pointer-events:none`;
+    can.firstElementChild.style.cssText = "width:100%;height:100%;display:block;overflow:visible";
+    card.appendChild(can);
+    const lid = can.querySelector(".lid");
+    lid.style.transformOrigin = "8% 100%"; lid.style.transformBox = "fill-box";
+    can.animate([{ opacity: 0, transform: "translateY(20px) scale(.8)" }, { opacity: 1, transform: "none" }],
+      { duration: 260, easing: "cubic-bezier(.2,.8,.3,1.2)", fill: "both" });
+    lid.animate([{ transform: "rotate(0)" }, { transform: "rotate(-55deg)" }], { duration: 260, delay: 300, fill: "forwards", easing: "ease-out" });
+
+    // 1) Scrunch the sign
+    const T1 = 520;
+    signEl.animate([
+      { transform: "none", borderRadius: "6px", filter: "none", opacity: 1 },
+      { transform: "scale(.82, .7) rotate(2deg) skewX(4deg)", borderRadius: "18px", filter: "contrast(1.1) brightness(.97)", offset: .35 },
+      { transform: "scale(.4, .32) rotate(-9deg) skewX(-8deg)", borderRadius: "40%", filter: "contrast(1.15) brightness(.93)", offset: .7 },
+      { transform: `scale(${ball / sR.width}, ${ball / sR.height}) rotate(14deg)`, borderRadius: "50%", opacity: 0 },
+    ], { duration: T1, easing: "cubic-bezier(.5,0,.75,.4)", fill: "forwards" });
+
+    // 2) Paper ball appears and arcs into the can
+    const b = document.createElement("div");
+    b.innerHTML = PAPER_BALL;
+    b.style.cssText = `position:absolute;left:${scx - ball / 2}px;top:${scy - ball / 2}px;width:${ball}px;height:${ball}px;z-index:7;pointer-events:none;opacity:0`;
+    b.firstElementChild.style.cssText = "width:100%;height:100%;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))";
+    card.appendChild(b);
+    const dx = canX + canW / 2 - scx, dy = canY + canH * 0.3 - scy;
+    const T2 = 620;
+    b.animate([
+      { opacity: 0, transform: "translate(0,0) scale(.4) rotate(0)", offset: 0 },
+      { opacity: 1, transform: "translate(0,0) scale(1) rotate(30deg)", offset: .12 },
+      { opacity: 1, transform: `translate(${dx * .5}px, ${Math.min(dy, 0) - ball * 1.6}px) scale(1) rotate(240deg)`, offset: .55 },
+      { opacity: 1, transform: `translate(${dx}px, ${dy}px) scale(.85) rotate(420deg)`, offset: .9 },
+      { opacity: 0, transform: `translate(${dx}px, ${dy + canH * .35}px) scale(.6) rotate(460deg)`, offset: 1 },
+    ], { duration: T2, delay: T1 - 120, easing: "cubic-bezier(.35,.1,.55,1)", fill: "both" }).onfinish = () => {
+      b.remove();
+      lid.animate([{ transform: "rotate(-55deg)" }, { transform: "rotate(6deg)" }, { transform: "rotate(0)" }], { duration: 220, fill: "forwards" });
+      can.animate([{ transform: "rotate(0)" }, { transform: "rotate(-6deg)" }, { transform: "rotate(5deg)" }, { transform: "rotate(0)" }], { duration: 320, easing: "ease-out" });
+
+      // 3) Reset and unfold a fresh sign
+      done();
+      signEl.getAnimations().forEach((a) => a.cancel());
+      signEl.animate([
+        { transform: "perspective(900px) rotateX(-80deg) scale(.96)", opacity: 0, transformOrigin: "50% 0%" },
+        { transform: "perspective(900px) rotateX(10deg)", opacity: 1, offset: .65, transformOrigin: "50% 0%" },
+        { transform: "none", opacity: 1, transformOrigin: "50% 0%" },
+      ], { duration: 520, delay: 120, easing: "cubic-bezier(.2,.7,.3,1)", fill: "backwards" });
+      can.animate([{ opacity: 1 }, { opacity: 0, transform: "translateY(16px) scale(.85)" }], { duration: 260, delay: 520, fill: "forwards" })
+        .onfinish = () => { can.remove(); crumpling = false; };
+    };
+  }
+
+  function resetBanner() {
     state.preset = "custom"; eventSel.value = "custom";
     state.graphic = "none"; graphicSel.value = "none";
     state.title = DEFAULT_TITLE; titleEl.textContent = titleInput.value = DEFAULT_TITLE;
@@ -557,7 +638,7 @@
     setLayout("standard");
     state.slots = Array(SLOT_COUNT).fill(""); state.slotStore = {}; active = 0;
     renderIcons(); update();
-  });
+  }
   // Typing your own name switches the Event menu to Custom (graphics stay as chosen).
   const toCustom = () => {
     const ev = EVENTS[state.preset];
