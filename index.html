@@ -133,6 +133,17 @@
   .need-sum { flex-basis: 100%; text-transform: none; letter-spacing: 0; font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.4; }
   .need-sum em { font-style: normal; color: var(--accent); }
   .need-sum.empty { font-weight: 500; color: var(--muted); font-size: 14px; }
+  .label-with-info { display: block; line-height: 1.35; }
+  .label-with-info .info { display: inline-grid; vertical-align: -5px; margin-left: 4px; }
+  .info { position: relative; width: 34px; height: 22px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--muted);
+    cursor: help; padding: 0 3px; display: grid; place-items: center; flex: none; }
+  .info:hover, .info:focus-visible, .info.open { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); outline: none; }
+  .info svg { width: 26px; height: 15px; display: block; }
+  .info .tip { position: absolute; left: -48px; bottom: calc(100% + 8px); width: 230px; padding: 10px 12px;
+    background: var(--ink); color: #fff; font: 500 12px/1.45 "Poppins", sans-serif; text-align: left; border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.18); opacity: 0; visibility: hidden; transition: opacity .12s; z-index: 20; pointer-events: none; }
+  .info .tip::after { content: ""; position: absolute; top: 100%; left: 59px; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--ink); }
+  .info:hover .tip, .info:focus-visible .tip, .info.open .tip { opacity: 1; visibility: visible; }
   .lockcell { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; }
   .lock { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 7px; background: #fff; cursor: pointer; padding: 0;
     display: grid; place-items: center; color: var(--muted); flex: none; }
@@ -381,7 +392,16 @@
           <span class="lockcell"><output id="widthOut">90%</output><button type="button" class="lock" data-lock="width" aria-pressed="true" title="Locked. Click to unlock"></button></span>
         </div>
         <div class="setting">
-          <label for="trimOn">Faint grey trim line</label>
+          <span class="label-with-info">
+            <label for="trimOn">Faint grey trim line</label><button type="button" class="info" aria-label="What is the faint grey trim line?" aria-describedby="trimTip">
+              <svg viewBox="0 0 28 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="3.6" cy="4" r="2.4"/><circle cx="3.6" cy="12" r="2.4"/>
+                <path d="M5.6 5.3L13 9.4M5.6 10.7L13 6.6"/>
+                <path d="M16 8h2.2M20.4 8h2.2M24.8 8h2.2" stroke-dasharray="0"/>
+              </svg>
+              <span class="tip" role="tooltip" id="trimTip">Prints a thin grey line around the 6x9 edge to help you line up your cuts. Turn it on, then choose your opacity level (lighter is less visible after cutting).</span>
+            </button>
+          </span>
           <label class="switch"><input type="checkbox" id="trimOn" role="switch"><span class="track"><span class="knob"></span></span><span id="trimOnText">Off</span></label>
           <output></output>
         </div>
@@ -1081,6 +1101,12 @@
   const weightEl = $("weight"), heightEl = $("height"), widthEl = $("width"), trimEl = $("trim"), cropsEl = $("crops");
   weightEl.value = state.weight; heightEl.value = state.height; widthEl.value = state.width; trimEl.value = state.trim || 20; cropsEl.checked = state.crops;
   const trimOnEl = $("trimOn"); trimOnEl.checked = !!state.trimOn;
+  // Trim line info: hover/focus on desktop, tap to toggle on touch.
+  document.querySelectorAll(".info").forEach((b) => {
+    b.addEventListener("click", (e) => { e.preventDefault(); b.classList.toggle("open"); });
+    b.addEventListener("blur", () => b.classList.remove("open"));
+  });
+
   // Locks: weight, height and width start locked on every visit.
   const LOCK_SVG = {
     closed: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
