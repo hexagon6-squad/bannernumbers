@@ -48,7 +48,7 @@
   .clear-field .btn { width: 100%; padding: 10px; }
   .clear-field .btn:hover { border-color: #e2b4b0; color: #b3261e; background: #fdf6f5; }
   .field input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
-  .sign { container-type: inline-size; background: #fff; border: 1px solid #ebe9e5; border-radius: 6px;
+  .sign { position: relative; overflow: hidden; container-type: inline-size; background: #fff; border: 1px solid #ebe9e5; border-radius: 6px;
     box-shadow: 0 10px 30px -12px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.05); padding: 4.5cqw 3cqw 4cqw; text-align: center;
     max-width: 1100px; margin: 0 auto; background-image: linear-gradient(180deg, #fff 0%, #fcfcfb 100%); }
   .sign-title { margin: 0 auto; font-weight: 800; font-size: 7cqw; max-width: 100%; line-height: 1.02; letter-spacing: -.01em; text-transform: uppercase; color: var(--ink);
@@ -678,7 +678,76 @@
     bannerPad.appendChild(b);
   });
   $("slotBlank").addEventListener("click", () => setSlot(""));
-  $("bannerClear").addEventListener("click", () => { state.slots = Array(SLOT_COUNT).fill(""); active = 0; update(); });
+  const clearNumbers = () => { state.slots = Array(SLOT_COUNT).fill(""); active = 0; update(); };
+  let sweeping = false;
+  $("bannerClear").addEventListener("click", () => {
+    if (sweeping) return;
+    if (reduceMotion() || !state.slots.some(Boolean)) return clearNumbers();
+    broomSweep(clearNumbers);
+  });
+
+  // Broom sweep: a broom swooshes across the number row; each number poofs into dust as it passes.
+  const BROOM_SVG = `<svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="56" y="0" width="9" height="92" rx="4" fill="#9C6B3F"/>
+    <rect x="56" y="0" width="9" height="10" rx="4" fill="#C0392B"/>
+    <path d="M44 88 L77 88 L80 100 L41 100 Z" fill="#C0392B"/>
+    <path d="M41 100 L80 100 L104 156 Q60 164 16 156 Z" fill="#E9C46A"/>
+    <path d="M47 104 L34 154 M55 104 L50 157 M61 104 L61 158 M67 104 L72 157 M74 104 L88 155" stroke="#C9A24A" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M38 118 Q60 124 84 118" stroke="#B5523B" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </svg>`;
+  function puff(x, y, size) {
+    for (let n = 0; n < 9; n++) {
+      const d = document.createElement("span");
+      const r = size * (0.12 + Math.random() * 0.16);
+      d.style.cssText = `position:absolute;left:${x - r / 2}px;top:${y - r / 2}px;width:${r}px;height:${r}px;border-radius:50%;` +
+        `background:${["#d8d2cb", "#e7e2dc", "#c9c1b8"][n % 3]};pointer-events:none;z-index:4`;
+      signEl.appendChild(d);
+      const ang = Math.random() * Math.PI * 2, dist = size * (0.25 + Math.random() * 0.45);
+      d.animate([
+        { transform: "translate(0,0) scale(.4)", opacity: .95 },
+        { transform: `translate(${Math.cos(ang) * dist + size * .25}px, ${Math.sin(ang) * dist - size * .15}px) scale(1.4)`, opacity: 0 },
+      ], { duration: 520 + Math.random() * 260, easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = () => d.remove();
+    }
+  }
+  function broomSweep(done) {
+    sweeping = true;
+    const sRect = signEl.getBoundingClientRect(), rRect = rowEl.getBoundingClientRect();
+    const h = rRect.height * 2.1, w = h * 0.75;
+    const top = rRect.top - sRect.top + rRect.height - h * 0.9;
+    const startX = rRect.left - sRect.left - w * 1.1, endX = rRect.right - sRect.left + w * 0.2;
+    const D = 1150;
+    const broom = document.createElement("div");
+    broom.innerHTML = BROOM_SVG;
+    broom.style.cssText = `position:absolute;left:0;top:${top}px;width:${w}px;height:${h}px;pointer-events:none;z-index:5;transform-origin:50% 0%`;
+    broom.firstElementChild.style.cssText = "width:100%;height:100%;display:block";
+    signEl.appendChild(broom);
+    broom.animate([
+      { transform: `translateX(${startX}px) rotate(-18deg)`, opacity: 0, offset: 0 },
+      { transform: `translateX(${startX + (endX - startX) * .08}px) rotate(14deg)`, opacity: 1, offset: .08 },
+      { transform: `translateX(${startX + (endX - startX) * .3}px) rotate(-14deg)`, offset: .3 },
+      { transform: `translateX(${startX + (endX - startX) * .52}px) rotate(14deg)`, offset: .52 },
+      { transform: `translateX(${startX + (endX - startX) * .74}px) rotate(-14deg)`, offset: .74 },
+      { transform: `translateX(${startX + (endX - startX) * .92}px) rotate(12deg)`, opacity: 1, offset: .92 },
+      { transform: `translateX(${endX}px) rotate(-10deg)`, opacity: 0, offset: 1 },
+    ], { duration: D, easing: "linear" }).onfinish = () => { broom.remove(); sweeping = false; done(); };
+    // Poof each filled box as the bristles reach it.
+    slotEls.forEach((el, i) => {
+      if (!state.slots[i]) return;
+      const b = el.getBoundingClientRect();
+      const cx = b.left - sRect.left + b.width / 2, cy = b.top - sRect.top + b.height / 2;
+      const t = Math.max(0, Math.min(1, (cx - (startX + w * 0.6)) / (endX - startX)));
+      setTimeout(() => {
+        el.animate([
+          { color: "#231f20", textShadow: "0 0 0 rgba(200,190,180,0)" },
+          { color: "rgba(35,31,32,.35)", textShadow: "6px -4px 8px rgba(200,190,180,.9)", offset: .4 },
+          { color: "rgba(35,31,32,0)", textShadow: "14px -8px 14px rgba(200,190,180,0)" },
+        ], { duration: 280, easing: "ease-out", fill: "forwards" }).onfinish = () => { el.style.color = "transparent"; };
+        puff(cx, cy, b.height);
+      }, t * D);
+    });
+    // Restore box styling after the real clear re-renders.
+    setTimeout(() => slotEls.forEach((el) => { el.getAnimations().forEach((a) => a.cancel()); el.style.color = ""; }), D + 30);
+  }
 
   document.addEventListener("keydown", (e) => {
     if (state.tab !== "banner") return;
