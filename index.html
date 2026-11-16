@@ -33,6 +33,15 @@
   .mock-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
   .mock-top h2 { margin: 0; }
   .mock-top span { font-size: 13px; color: var(--muted); }
+  /* Wide screens: buttons get their own column on the right; fields + banner start at the top, centered. */
+  @media (min-width: 1180px) {
+    .mock-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 24px; align-items: start; }
+    .mock-card > * { grid-column: 1; width: 100%; }
+    .mock-top { display: contents; }
+    .mock-top h2 { grid-column: 2; grid-row: 1; margin-bottom: 10px; }
+    .mock-actions { grid-column: 2; grid-row: 2 / span 20; align-self: start; }
+    .mock-card > .text-fields { grid-row: 1 / span 2; }
+  }
   .mock-actions { display: grid; grid-template-columns: auto auto; gap: 8px; }
   .single { display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 0 6px 0 12px; font-size: 13px; font-weight: 600; background: #fff; }
   .single select { border: 0; background: #f4f3f1; border-radius: 6px; padding: 4px 8px; font: 700 16px "Poppins", sans-serif; color: var(--ink); cursor: pointer; }
