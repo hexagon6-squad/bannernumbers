@@ -328,7 +328,7 @@
           <li><b>Click Print</b><span>The green Print button at the bottom of this panel opens the PDF preview in a new tab. For the sign itself, use "Print banner mockup."</span></li>
           <li><b>Click print in the preview</b><span>Use the print icon in the PDF preview tab. If no tab opens, allow pop-ups, or use Download PDF and open the file.</span></li>
           <li><b>Print at Actual size</b><span>Letter paper, Scale <b>Actual size</b> or <b>100%</b>. Not "Fit."</span></li>
-          <li><b>Cut on the crop marks</b><span>Each number trims to 6 x 9 in. To help with cutting, turn the faint grey trim line on or off under Print settings (it starts off).</span></li>
+          <li><b>Cut on the crop marks</b><span>Each number trims to 6 x 9 in. To help with cutting, turn the faint grey trim line on or off under Print settings (it starts on at 15%).</span></li>
         </ol>
       </details>
 
@@ -411,7 +411,7 @@
         </div>
         <div class="setting" id="trimShadeRow">
           <label for="trim">Trim line opacity</label>
-          <input type="range" id="trim" min="5" max="100" step="5" value="20">
+          <input type="range" id="trim" min="5" max="100" step="5" value="15">
           <output id="trimOut">20%</output>
         </div>
         <div class="setting">
@@ -419,7 +419,7 @@
           <input type="checkbox" id="crops" checked style="justify-self:start">
           <output></output>
         </div>
-        <p class="hint">Weight, height and width are locked to match the Tree Lighting banner file (Poppins Bold, 8.5 in tall, 90% width). Click a lock to change one. The faint grey trim line outlines the 6x9 cut; it starts off. <button type="button" class="reset-link" id="resetSettings">Reset to default</button></p>
+        <p class="hint">Weight, height and width are locked to match the Tree Lighting banner file (Poppins Bold, 8.5 in tall, 90% width). Click a lock to change one. The faint grey trim line outlines the 6x9 cut; it starts on at 15%. <button type="button" class="reset-link" id="resetSettings">Reset to default</button></p>
       </details>
 
       <div class="card">
@@ -482,12 +482,12 @@
   const state = {
     tab: "banner", title: DEFAULT_TITLE, kicker: "", note: DEFAULT_NOTE, preset: "custom", graphic: "none",
     layout: "standard", slotStore: {}, slots: [], copies: 1, order: "banner",
-    queue: [], weight: "700", height: 8.5, width: 90, trim: 20, trimOn: false, crops: true,
+    queue: [], weight: "700", height: 8.5, width: 90, trim: 15, trimOn: true, crops: true,
   };
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE_KEY) || "{}")); } catch (e) {}
   if (state.title === "Event Numbers") state.title = DEFAULT_TITLE;
   if (typeof state.note !== "string") state.note = DEFAULT_NOTE;
-  state.trimOn = false; // the faint grey trim line always starts off
+  state.trimOn = true; state.trim = 15; // the faint grey trim line always starts on at 15%
   if (!LAYOUTS[state.layout]) state.layout = "standard";
   if (typeof state.kicker !== "string") state.kicker = "";
   if (!state.slotStore || typeof state.slotStore !== "object") state.slotStore = {};
@@ -1253,7 +1253,7 @@
 
   // ---------- Settings ----------
   const weightEl = $("weight"), heightEl = $("height"), widthEl = $("width"), trimEl = $("trim"), cropsEl = $("crops");
-  weightEl.value = state.weight; heightEl.value = state.height; widthEl.value = state.width; trimEl.value = state.trim || 20; cropsEl.checked = state.crops;
+  weightEl.value = state.weight; heightEl.value = state.height; widthEl.value = state.width; trimEl.value = state.trim || 15; cropsEl.checked = state.crops;
   const trimOnEl = $("trimOn"); trimOnEl.checked = !!state.trimOn;
   // Trim line info: hover/focus on desktop, tap to toggle on touch.
   document.querySelectorAll(".info").forEach((b) => {
@@ -1282,9 +1282,9 @@
   });
 
   $("resetSettings").addEventListener("click", () => {
-    Object.assign(state, { weight: "700", height: 8.5, width: 90, trimOn: false, trim: 20, crops: true });
-    weightEl.value = "700"; heightEl.value = 8.5; widthEl.value = 90; trimEl.value = 20;
-    trimOnEl.checked = false; cropsEl.checked = true;
+    Object.assign(state, { weight: "700", height: 8.5, width: 90, trimOn: true, trim: 15, crops: true });
+    weightEl.value = "700"; heightEl.value = 8.5; widthEl.value = 90; trimEl.value = 15;
+    trimOnEl.checked = true; cropsEl.checked = true;
     document.querySelectorAll(".lock").forEach((btn) => setLock(btn, true));
     buildGlyphs(); showOutputs(); update();
   });
@@ -1300,7 +1300,7 @@
   weightEl.addEventListener("change", () => { state.weight = weightEl.value; buildGlyphs(); update(); });
   heightEl.addEventListener("input", () => { state.height = parseFloat(heightEl.value); showOutputs(); update(); });
   widthEl.addEventListener("input", () => { state.width = parseInt(widthEl.value, 10); showOutputs(); update(); });
-  trimOnEl.addEventListener("change", () => { state.trimOn = trimOnEl.checked; if (!state.trim) state.trim = 20; showOutputs(); update(); });
+  trimOnEl.addEventListener("change", () => { state.trimOn = trimOnEl.checked; if (!state.trim) state.trim = 15; showOutputs(); update(); });
   trimEl.addEventListener("input", () => { state.trim = parseInt(trimEl.value, 10); showOutputs(); update(); });
   cropsEl.addEventListener("change", () => { state.crops = cropsEl.checked; update(); });
   const printNumbers = () => { if (currentList().length) openPDF(pagesPDF, fileName()); };
