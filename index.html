@@ -94,7 +94,14 @@
   /* ---------- Keypad ---------- */
   .fillbar { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 18px auto 0; flex-wrap: wrap; }
   .fillbar-label { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-  .pad-row { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; flex: 1; min-width: 300px; }
+  .fillbar { align-items: flex-start; }
+  .fillbar-label { line-height: 52px; }
+  .pad-col { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 6px; }
+  .pad-row { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
+  .spacebar { height: 40px; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: pointer; color: var(--muted);
+    font: 600 12px "Poppins", sans-serif; letter-spacing: .12em; text-transform: uppercase; box-shadow: 0 2px 0 var(--line); transition: background .1s, transform .05s; }
+  .spacebar:hover { background: #f7f6f4; color: var(--ink); }
+  .spacebar:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--line); }
   .pad-row button { height: 52px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: 700 24px "Poppins", sans-serif;
     color: var(--ink); cursor: pointer; transition: background .1s, transform .05s; padding: 0; }
   .pad-row button:hover { background: #f7f6f4; }
@@ -308,13 +315,15 @@
     </div>
     <div class="fillbar">
       <span class="fillbar-label">Fill the box</span>
-      <div class="pad-row" id="bannerPad"></div>
+      <div class="pad-col">
+        <div class="pad-row" id="bannerPad"></div>
+        <button class="spacebar" id="slotBlank" type="button" title="Leave this box blank">Space bar</button>
+        <p class="hint" style="text-align:center;margin:0">Click a box, then tap a number or type <kbd>0</kbd>-<kbd>9</kbd>. <kbd>Space</kbd> leaves it blank, <kbd>⌫</kbd> goes back, <kbd>←</kbd><kbd>→</kbd> move.</p>
+      </div>
       <div class="fillbar-actions">
-        <button class="btn" id="slotBlank" type="button">Leave blank</button>
         <button class="btn clear-num" id="bannerClear" type="button">Clear numbers</button>
       </div>
     </div>
-    <p class="hint" style="text-align:center">Click a box, then tap a number or type <kbd>0</kbd>-<kbd>9</kbd>. <kbd>Space</kbd> leaves it blank, <kbd>⌫</kbd> goes back, <kbd>←</kbd><kbd>→</kbd> move.</p>
   </section>
 
   <div class="grid">
@@ -323,7 +332,7 @@
         <summary>How to print</summary>
         <ol class="steps" style="margin-top:12px">
           <li><b data-panel="banner">Fill in the banner</b><b data-panel="pick" hidden>Pick your numbers</b>
-            <span data-panel="banner">Click a box on the banner, then tap a number in the Fill the box row ("Clear numbers" empties the boxes, "Clear banner" resets everything). Open "Number tally" to see the count.</span>
+            <span data-panel="banner">Click a box on the banner, then tap a number in the Fill the box row (Space bar leaves a box blank, "Clear numbers" empties the boxes, "Clear banner" resets everything). Open "Number tally" to see the count.</span>
             <span data-panel="pick" hidden>Tap 0-9 or type a set. Each number is one page.</span></li>
           <li><b>Click Print</b><span>The green Print button at the bottom of this panel opens the PDF preview in a new tab. For the sign itself, use "Print banner mockup."</span></li>
           <li><b>Click print in the preview</b><span>Use the print icon in the PDF preview tab. If no tab opens, allow pop-ups, or use Download PDF and open the file.</span></li>
