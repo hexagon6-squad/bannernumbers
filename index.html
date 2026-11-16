@@ -109,6 +109,8 @@
   .pad-row { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
   .spacebar { height: 40px; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: pointer; color: var(--muted);
     font: 600 12px "Poppins", sans-serif; letter-spacing: .12em; text-transform: uppercase; box-shadow: 0 2px 0 var(--line); transition: background .1s, transform .05s; }
+  .key-row { display: grid; grid-template-columns: calc((100% - 54px) / 10 * 2 + 6px) 1fr; gap: 6px; }
+  .backkey { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
   .spacebar:hover { background: #f7f6f4; color: var(--ink); }
   .spacebar:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--line); }
   .pad-row button { height: 52px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: 700 24px "Poppins", sans-serif;
@@ -326,7 +328,13 @@
       <span class="fillbar-label">Fill the box</span>
       <div class="pad-col">
         <div class="pad-row" id="bannerPad"></div>
-        <button class="spacebar" id="slotBlank" type="button" title="Leave this box blank">Space bar</button>
+        <div class="key-row">
+          <button class="spacebar backkey" id="slotBack" type="button" title="Erase and go back (Backspace)" aria-label="Back">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M12 9l6 6M18 9l-6 6"/></svg>
+            Back
+          </button>
+          <button class="spacebar" id="slotBlank" type="button" title="Leave this box blank">Space bar</button>
+        </div>
         <p class="hint" style="text-align:center;margin:0">Click a box, then tap a number or type <kbd>0</kbd>-<kbd>9</kbd>. <kbd>Space</kbd> leaves it blank, <kbd>⌫</kbd> goes back, <kbd>←</kbd><kbd>→</kbd> move.</p>
       </div>
       <div class="fillbar-actions">
@@ -777,6 +785,12 @@
     bannerPad.appendChild(b);
   });
   $("slotBlank").addEventListener("click", () => setSlot(""));
+  // Back: erase this box, or if it's already empty, step back and erase that one (like Backspace).
+  function goBack() {
+    if (!state.slots[active] && active > 0) active--;
+    state.slots[active] = ""; update();
+  }
+  $("slotBack").addEventListener("click", goBack);
   const clearNumbers = () => { state.slots = Array(SLOT_COUNT).fill(""); active = 0; update(); };
   let sweeping = false;
   $("bannerClear").addEventListener("click", () => {
@@ -855,11 +869,7 @@
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (/^[0-9]$/.test(e.key)) { e.preventDefault(); setSlot(e.key); }
     else if (e.key === " ") { e.preventDefault(); setSlot(""); }
-    else if (e.key === "Backspace") {
-      e.preventDefault();
-      if (!state.slots[active] && active > 0) active--;
-      state.slots[active] = ""; update();
-    }
+    else if (e.key === "Backspace") { e.preventDefault(); goBack(); }
     else if (e.key === "Delete") { e.preventDefault(); state.slots[active] = ""; update(); }
     else if (e.key === "ArrowLeft") { e.preventDefault(); active = Math.max(0, active - 1); renderSlots(); }
     else if (e.key === "ArrowRight") { e.preventDefault(); active = Math.min(SLOT_COUNT - 1, active + 1); renderSlots(); }
